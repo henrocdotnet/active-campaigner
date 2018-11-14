@@ -4,18 +4,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/parnurzeal/gorequest"
 	"log"
 	"strings"
+
+	"github.com/parnurzeal/gorequest"
 )
 
 type Campaigner struct {
 	ApiToken string
 	BaseURL  string
-}
-
-func (c *Campaigner) Bleh() {
-
 }
 
 func (c *Campaigner) CheckConfig() error {

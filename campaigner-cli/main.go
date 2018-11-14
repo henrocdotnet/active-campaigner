@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/henrocdotnet/active-campaigner/campaigner"
-	"github.com/kelseyhightower/envconfig"
 	"log"
 	"os"
 	"strconv"
+
+	"github.com/henrocdotnet/active-campaigner/campaigner"
+	"github.com/kelseyhightower/envconfig"
 )
 
 var (
