@@ -2,30 +2,13 @@ package campaigner
 
 type ResponseContactCreate struct {
 	Contact struct {
-		Email string `json:"email"`
-		Cdate string `json:"cdate"`
-		Udate string `json:"udate"`
-		Orgid string `json:"orgid"`
-		Links struct {
-			BounceLogs         string `json:"bounceLogs"`
-			ContactAutomations string `json:"contactAutomations"`
-			ContactData        string `json:"contactData"`
-			ContactGoals       string `json:"contactGoals"`
-			ContactLists       string `json:"contactLists"`
-			ContactLogs        string `json:"contactLogs"`
-			ContactTags        string `json:"contactTags"`
-			ContactDeals       string `json:"contactDeals"`
-			Deals              string `json:"deals"`
-			FieldValues        string `json:"fieldValues"`
-			GeoIps             string `json:"geoIps"`
-			Notes              string `json:"notes"`
-			Organization       string `json:"organization"`
-			PlusAppend         string `json:"plusAppend"`
-			TrackingLogs       string `json:"trackingLogs"`
-			ScoreValues        string `json:"scoreValues"`
-		} `json:"links"`
-		ID           string `json:"id"`
-		Organization string `json:"organization"`
+		Email        string       `json:"email"`
+		Cdate        string       `json:"cdate"`
+		Udate        string       `json:"udate"`
+		Orgid        string       `json:"orgid"`
+		Links        ContactLinks `json:"links"`
+		ID           string       `json:"id"`
+		Organization string       `json:"organization"`
 	} `json:"contact"`
 }
 
@@ -60,26 +43,9 @@ type ResponseContactList struct {
 		CreatedUtcTimestamp string        `json:"created_utc_timestamp"`
 		UpdatedUtcTimestamp string        `json:"updated_utc_timestamp"`
 		ScoreValues         []interface{} `json:"scoreValues"`
-		Links               struct {
-			BounceLogs         string `json:"bounceLogs"`
-			ContactAutomations string `json:"contactAutomations"`
-			ContactData        string `json:"contactData"`
-			ContactGoals       string `json:"contactGoals"`
-			ContactLists       string `json:"contactLists"`
-			ContactLogs        string `json:"contactLogs"`
-			ContactTags        string `json:"contactTags"`
-			ContactDeals       string `json:"contactDeals"`
-			Deals              string `json:"deals"`
-			FieldValues        string `json:"fieldValues"`
-			GeoIps             string `json:"geoIps"`
-			Notes              string `json:"notes"`
-			Organization       string `json:"organization"`
-			PlusAppend         string `json:"plusAppend"`
-			TrackingLogs       string `json:"trackingLogs"`
-			ScoreValues        string `json:"scoreValues"`
-		} `json:"links"`
-		ID           string `json:"id"`
-		Organization string `json:"organization"`
+		Links               ContactLinks  `json:"links"`
+		ID                  string        `json:"id"`
+		Organization        string        `json:"organization"`
 	} `json:"contacts"`
 	Meta struct {
 		Total     string `json:"total"`
@@ -244,5 +210,5 @@ type ResponseOrganizationList struct {
 }
 
 type ResponseError struct {
-	Errors [] ActiveCampaignError
+	Errors []ActiveCampaignError
 }
