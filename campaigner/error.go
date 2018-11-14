@@ -37,14 +37,14 @@ type ActiveCampaignErrorList struct {
 
 // TODO(naming): Rename this.
 type CustomError struct {
-	HttpErrors []error
+	HTTPErrors []error
 	Message    string
 }
 
 func (e CustomError) Error() string {
 	var l []string
 
-	for _, y := range e.HttpErrors {
+	for _, y := range e.HTTPErrors {
 		l = append(l, y.Error())
 	}
 	return fmt.Sprintf("%s (%s)", e.Message, strings.Join(l, ", "))
@@ -61,7 +61,7 @@ func (e CustomError) WriteToLog() {
 		output string
 	)
 
-	for _, x := range e.HttpErrors {
+	for _, x := range e.HTTPErrors {
 		list = append(list, x.Error())
 	}
 

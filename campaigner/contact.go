@@ -71,8 +71,8 @@ func (c *Campaigner) ContactCreate(contact Contact) (ResponseContactCreate, erro
 			return result, fmt.Errorf("contact creation failed, json error: %s", err)
 		}
 
-		writeIndentedJson(path.Join(os.Getenv("TEMP"), "contact_create_response.json"), []byte(body))
-		logFormattedJson("ContactCreate Result:", result)
+		writeIndentedJSON(path.Join(os.Getenv("TEMP"), "contact_create_response.json"), []byte(body))
+		logFormattedJSON("ContactCreate Result:", result)
 
 		return result, nil
 
@@ -87,9 +87,8 @@ func (c *Campaigner) ContactCreate(contact Contact) (ResponseContactCreate, erro
 		}
 
 		return result, apiError
-	} else {
-		return result, fmt.Errorf("contact creation failed, unspecified error: %s", body)
 	}
+	return result, fmt.Errorf("contact creation failed, unspecified error: %s", body)
 }
 
 func (c *Campaigner) ContactDelete(id int) error {
@@ -130,7 +129,7 @@ func (c *Campaigner) ContactRead(id int) (ResponseContactRead, error) {
 		return response, fmt.Errorf("read failed: ID %d general error", id)
 	}
 
-	writeIndentedJson(path.Join(os.Getenv("TEMP"), "contact_read_response.json"), b)
+	writeIndentedJSON(path.Join(os.Getenv("TEMP"), "contact_read_response.json"), b)
 
 	err = json.Unmarshal(b, &response)
 	if err != nil {

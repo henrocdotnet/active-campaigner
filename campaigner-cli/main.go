@@ -15,7 +15,7 @@ var (
 )
 
 type configSetup struct {
-	ApiToken string `envconfig:"api_token"`
+	APIToken string `envconfig:"api_token"`
 	BaseURL  string `envconfig:"base_url"`
 }
 
@@ -30,7 +30,7 @@ func init() {
 func main() {
 	args := os.Args
 
-	c := campaigner.Campaigner{ApiToken: config.ApiToken, BaseURL: config.BaseURL}
+	c := campaigner.Campaigner{APIToken: config.APIToken, BaseURL: config.BaseURL}
 
 	if len(args) < 2 {
 		printUsage()

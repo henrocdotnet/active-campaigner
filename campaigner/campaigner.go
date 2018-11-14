@@ -11,12 +11,12 @@ import (
 )
 
 type Campaigner struct {
-	ApiToken string
+	APIToken string
 	BaseURL  string
 }
 
 func (c *Campaigner) CheckConfig() error {
-	if len(c.ApiToken) == 0 {
+	if len(c.APIToken) == 0 {
 		return CustomError{}.SetMessage("campaigner API token not set")
 	} else if len(c.BaseURL) == 0 {
 		return CustomError{}.SetMessage("campaigner base URL not set")
@@ -50,11 +50,11 @@ func (c *Campaigner) Delete(url string) (gorequest.Response, string, error) {
 
 	r, b, errs = gorequest.New().
 		Delete(c.GenerateURL(url)).
-		Set("Api-Token", c.ApiToken).
+		Set("Api-Token", c.APIToken).
 		End()
 
 	if errs != nil {
-		return r, b, CustomError{Message: "could not perform HTTP DELETE request", HttpErrors: errs}
+		return r, b, CustomError{Message: "could not perform HTTP DELETE request", HTTPErrors: errs}
 	}
 
 	return r, b, nil
@@ -79,11 +79,11 @@ func (c *Campaigner) get(url string) (gorequest.Response, []byte, error) {
 
 	r, b, errs = gorequest.New().
 		Get(url).
-		Set("Api-Token", c.ApiToken).
+		Set("Api-Token", c.APIToken).
 		EndBytes()
 
 	if errs != nil {
-		return r, b, CustomError{Message: "could not perform HTTP GET request", HttpErrors: errs}
+		return r, b, CustomError{Message: "could not perform HTTP GET request", HTTPErrors: errs}
 	}
 
 	log.Printf("RESPONSE:\n%#v\n", r)
@@ -127,12 +127,12 @@ func (c *Campaigner) post(url string, i interface{}) (gorequest.Response, []byte
 	r, b, errs = gorequest.New().
 		Post(url).
 		Send(string(j)).
-		Set("Api-Token", c.ApiToken).
+		Set("Api-Token", c.APIToken).
 		EndBytes()
 
 	// Error check.
 	if errs != nil {
-		return r, b, CustomError{Message: "could not perform HTTP POST request", HttpErrors: errs}
+		return r, b, CustomError{Message: "could not perform HTTP POST request", HTTPErrors: errs}
 	}
 
 	return r, b, nil
@@ -162,7 +162,7 @@ func (c *Campaigner) Put(url string, i interface{}) (gorequest.Response, string,
 	r, b, errs = gorequest.New().
 		Post(url).
 		Send(string(j)).
-		Set("Api-Token", c.ApiToken).
+		Set("Api-Token", c.APIToken).
 		End()
 
 	// log.Printf("j: %#v", j)

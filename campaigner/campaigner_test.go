@@ -9,9 +9,7 @@ import (
 	"testing"
 )
 
-
 type unitTest func(*testing.T)
-
 
 func TestMain(m *testing.M) {
 	if flag.Parsed() == false {
@@ -35,16 +33,13 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-
 func TestPrint(t *testing.T) {
 	log.Println("Testing print.")
 }
 
-
 func TestRunTestWithName(t *testing.T) {
 	runTestWithName(t, TestPrint)
 }
-
 
 func runTestWithName(t *testing.T, u unitTest) {
 	rv := reflect.ValueOf(u)
