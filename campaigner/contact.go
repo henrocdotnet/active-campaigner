@@ -48,13 +48,12 @@ func (c *Campaigner) ContactList() error {
 	return nil
 }
 
-
 func (c *Campaigner) ContactCreate(contact Contact) (ResponseContactCreate, error) {
 	// Setup.
 	var (
 		result ResponseContactCreate
-		url = "/api/3/contacts"
-		data = map[string]interface{}{
+		url    = "/api/3/contacts"
+		data   = map[string]interface{}{
 			"contact": contact,
 		}
 	)
@@ -93,7 +92,6 @@ func (c *Campaigner) ContactCreate(contact Contact) (ResponseContactCreate, erro
 	}
 }
 
-
 func (c *Campaigner) ContactDelete(id int) error {
 	r, b, err := c.Delete(fmt.Sprintf("/api/3/contacts/%d", id))
 
@@ -116,7 +114,7 @@ func (c *Campaigner) ContactRead(id int) (ResponseContactRead, error) {
 	// Locals.
 	var (
 		response ResponseContactRead
-		url = fmt.Sprintf("/api/3/contacts/%d", id)
+		url      = fmt.Sprintf("/api/3/contacts/%d", id)
 	)
 
 	// Perform query.

@@ -13,7 +13,7 @@ func dump(i interface{}) {
 }
 
 func silenceIDE(i interface{}) {
-	return;
+	return
 }
 
 func logFormattedJson(message string, data interface{}) {
@@ -28,9 +28,8 @@ func logFormattedJson(message string, data interface{}) {
 	log.Printf("\n%s", string(tmp))
 }
 
-
 func writeIndentedJson(path string, data []byte) {
-	var o bytes.Buffer;
+	var o bytes.Buffer
 
 	json.Indent(&o, data, "", "\t")
 

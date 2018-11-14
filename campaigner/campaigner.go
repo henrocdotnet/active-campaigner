@@ -14,7 +14,6 @@ type Campaigner struct {
 	BaseURL  string
 }
 
-
 func (c *Campaigner) Bleh() {
 
 }
@@ -39,11 +38,11 @@ func (c *Campaigner) GenerateURL(url string) string {
 	return url
 }
 
-func (c *Campaigner) Delete(url string) (gorequest.Response, string, error){
+func (c *Campaigner) Delete(url string) (gorequest.Response, string, error) {
 	// Locals.
 	var (
-		r gorequest.Response
-		b string
+		r    gorequest.Response
+		b    string
 		errs []error
 	)
 
@@ -58,7 +57,7 @@ func (c *Campaigner) Delete(url string) (gorequest.Response, string, error){
 		End()
 
 	if errs != nil {
-		return r, b, CustomError{ Message: "could not perform HTTP DELETE request", HttpErrors: errs }
+		return r, b, CustomError{Message: "could not perform HTTP DELETE request", HttpErrors: errs}
 	}
 
 	return r, b, nil
@@ -67,8 +66,8 @@ func (c *Campaigner) Delete(url string) (gorequest.Response, string, error){
 func (c *Campaigner) get(url string) (gorequest.Response, []byte, error) {
 	// Locals.
 	var (
-		r gorequest.Response
-		b []byte
+		r    gorequest.Response
+		b    []byte
 		errs []error
 	)
 
@@ -87,7 +86,7 @@ func (c *Campaigner) get(url string) (gorequest.Response, []byte, error) {
 		EndBytes()
 
 	if errs != nil {
-		return r, b, CustomError{ Message: "could not perform HTTP GET request", HttpErrors: errs }
+		return r, b, CustomError{Message: "could not perform HTTP GET request", HttpErrors: errs}
 	}
 
 	log.Printf("RESPONSE:\n%#v\n", r)
@@ -105,14 +104,13 @@ func (c *Campaigner) get(url string) (gorequest.Response, []byte, error) {
 	return r, b, nil
 }
 
-
 // Send a POST request to the Active Campaign API.
 // TODO(error-check): Should check that base URL and API key are at least non-empty.
 func (c *Campaigner) post(url string, i interface{}) (gorequest.Response, []byte, error) {
 	// Locals.
 	var (
-		r gorequest.Response
-		b []byte
+		r    gorequest.Response
+		b    []byte
 		errs []error
 	)
 
@@ -137,7 +135,7 @@ func (c *Campaigner) post(url string, i interface{}) (gorequest.Response, []byte
 
 	// Error check.
 	if errs != nil {
-		return r, b, CustomError{ Message: "could not perform HTTP POST request", HttpErrors: errs }
+		return r, b, CustomError{Message: "could not perform HTTP POST request", HttpErrors: errs}
 	}
 
 	return r, b, nil
@@ -147,8 +145,8 @@ func (c *Campaigner) post(url string, i interface{}) (gorequest.Response, []byte
 func (c *Campaigner) Put(url string, i interface{}) (gorequest.Response, string, error) {
 	// Locals.
 	var (
-		r gorequest.Response
-		b string
+		r    gorequest.Response
+		b    string
 		errs []error
 	)
 
@@ -180,11 +178,11 @@ func (c *Campaigner) Put(url string, i interface{}) (gorequest.Response, string,
 	log.Printf("BODY:\n%#v\n", b)
 
 	/*
-	var m map[string]interface{}
-	err = json.Unmarshal([]byte(b), &m)
-	if err != nil {
-		panic(err)
-	}
+		var m map[string]interface{}
+		err = json.Unmarshal([]byte(b), &m)
+		if err != nil {
+			panic(err)
+		}
 	*/
 
 	var pretty bytes.Buffer

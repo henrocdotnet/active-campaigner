@@ -38,7 +38,7 @@ type ActiveCampaignErrorList struct {
 // TODO(naming): Rename this.
 type CustomError struct {
 	HttpErrors []error
-	Message string
+	Message    string
 }
 
 func (e CustomError) Error() string {
@@ -57,7 +57,7 @@ func (e CustomError) SetMessage(m string) CustomError {
 
 func (e CustomError) WriteToLog() {
 	var (
-		list []string
+		list   []string
 		output string
 	)
 
