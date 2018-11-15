@@ -3,9 +3,15 @@ package campaigner
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/kr/pretty"
 	"io/ioutil"
 	"log"
 )
+
+func dump(i interface{}) {
+	log.Printf("%# v", pretty.Formatter(i))
+}
+
 
 func logFormattedJSON(message string, data interface{}) {
 	tmp, err := json.MarshalIndent(data, "", "\t")

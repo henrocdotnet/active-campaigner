@@ -2,6 +2,7 @@ package campaigner
 
 import (
 	"flag"
+	"github.com/kelseyhightower/envconfig"
 	"log"
 	"os"
 	"reflect"
@@ -9,7 +10,25 @@ import (
 	"testing"
 )
 
+type configSetup struct {
+	APIToken string `envconfig:"api_token"`
+	BaseURL  string `envconfig:"base_url"`
+}
+
 type unitTest func(*testing.T)
+
+var (
+	config configSetup
+)
+
+// TODO: Move flag parsing into TestMain at some point.
+func init() {
+	err := envconfig.Process("ac", &config)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 
 func TestMain(m *testing.M) {
 	if flag.Parsed() == false {

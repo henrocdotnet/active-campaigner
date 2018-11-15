@@ -205,7 +205,7 @@ type ResponseOrganizationCreate struct {
 type ResponseOrganizationList struct {
 	Organizations []Organization `json:"organizations"`
 	Meta          struct {
-		Total string `json:"total"`
+		Total int64 `json:"total,string"`
 	} `json:"meta"`
 }
 

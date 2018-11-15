@@ -4,14 +4,9 @@ import (
 	"log"
 	"testing"
 
-	"github.com/kelseyhightower/envconfig"
 	"github.com/stretchr/testify/assert"
 )
 
-type configSetup struct {
-	APIKey  string `envconfig:"api_token"`
-	BaseURL string `envconfig:"base_url"`
-}
 
 // TODO(cleanup): Remove references to globals key and baseURL
 
@@ -29,16 +24,7 @@ var (
 		5: {ID: 5, FirstName: "Test", LastName: "User 00004", EmailAddress: "247actestuser00004@henroc.net", PhoneNumber: "3015413441"},
 	}
 
-	config configSetup
 )
-
-// TODO: Move flag parsing into TestMain at some point.
-func init() {
-	err := envconfig.Process("ac", &config)
-	if err != nil {
-		log.Fatal(err)
-	}
-}
 
 type TestContact struct {
 	ID           int
@@ -49,14 +35,14 @@ type TestContact struct {
 }
 
 func TestContactList(t *testing.T) {
-	c := Campaigner{APIToken: config.APIKey, BaseURL: config.BaseURL}
+	c := Campaigner{APIToken: config.APIToken, BaseURL: config.BaseURL}
 	c.ContactList()
 }
 
 func TestContactRead(t *testing.T) {
-	log.Printf("config key? %s\n", config.APIKey)
+	log.Printf("config key? %s\n", config.APIToken)
 
-	c := Campaigner{APIToken: config.APIKey, BaseURL: config.BaseURL}
+	c := Campaigner{APIToken: config.APIToken, BaseURL: config.BaseURL}
 	r, err := c.ContactRead(2)
 
 	assert.NotNil(t, r)
@@ -69,7 +55,7 @@ func TestContactRead(t *testing.T) {
 
 func TestContactCreate(t *testing.T) {
 	id := 5
-	c := Campaigner{APIToken: config.APIKey, BaseURL: config.BaseURL}
+	c := Campaigner{APIToken: config.APIToken, BaseURL: config.BaseURL}
 	contact := Contact{FirstName: users[id].FirstName, LastName: users[id].LastName, EmailAddress: users[id].EmailAddress, PhoneNumber: users[id].PhoneNumber}
 
 	r, err := c.ContactCreate(contact)
@@ -86,7 +72,7 @@ func TestContactCreate(t *testing.T) {
 func TestContactCreateFailureExists(t *testing.T) {
 	return
 
-	c := Campaigner{APIToken: config.APIKey, BaseURL: config.BaseURL}
+	c := Campaigner{APIToken: config.APIToken, BaseURL: config.BaseURL}
 
 	contact := Contact{FirstName: "Light", LastName: "Saber", EmailAddress: "lightsabervc@gmail.com", PhoneNumber: ""}
 
@@ -95,7 +81,7 @@ func TestContactCreateFailureExists(t *testing.T) {
 
 // TODO(unit-test): Test this test.
 func TestContactCreateFailureInvalidURL(t *testing.T) {
-	c := Campaigner{APIToken: config.APIKey, BaseURL: "http://invalid"}
+	c := Campaigner{APIToken: config.APIToken, BaseURL: "http://invalid"}
 	contact := Contact{FirstName: "Henry", LastName: "Rivera", EmailAddress: "h@247waiter.com", PhoneNumber: "3015413441"}
 
 	r, err := c.ContactCreate(contact)
@@ -107,9 +93,9 @@ func TestContactCreateFailureInvalidURL(t *testing.T) {
 }
 
 func TestContactDelete(t *testing.T) {
-	log.Printf("config? %s %s\n", config.BaseURL, config.APIKey)
+	log.Printf("config? %s %s\n", config.BaseURL, config.APIToken)
 	id := 2
-	c := Campaigner{APIToken: config.APIKey, BaseURL: config.BaseURL}
+	c := Campaigner{APIToken: config.APIToken, BaseURL: config.BaseURL}
 	err := c.ContactDelete(id)
 	assert.Nil(t, err)
 }

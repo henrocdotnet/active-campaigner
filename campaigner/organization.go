@@ -5,43 +5,17 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	url2 "net/url"
+	"strings"
 )
 
+// Represents an organization as it exists in the API.
 type Organization struct {
 	Name         string        `json:"name"`
 	Links        []interface{} `json:"links"`
 	ID           int64         `json:"id,string"`
 	ContactCount string        `json:"contactCount"`
 	DealCount    string        `json:"dealCount"`
-}
-
-func (c *Campaigner) OrganizationList() (ResponseOrganizationList, error) {
-	// Setup.
-	var (
-		url      = "/api/3/organizations"
-		response ResponseOrganizationList
-	)
-
-	// GET request.
-	r, b, err := c.get(url)
-	if err != nil {
-		err.(CustomError).WriteToLog()
-		return response, fmt.Errorf("organization list failed, HTTP failure: %s", err)
-	}
-
-	// Success.
-	// TODO(doc-mismatch): 200 != 201
-	if r.StatusCode == http.StatusOK {
-		err = json.Unmarshal(b, &response)
-		if err != nil {
-			return response, fmt.Errorf("organization list failed, JSON failure: %s", err)
-		}
-
-		return response, nil
-	}
-
-	// Failure (API docs are not clear about errors here).
-	return response, fmt.Errorf("organization list failed, unspecified error: %s", b)
 }
 
 func (c *Campaigner) OrganizationCreate(org Organization) (ResponseOrganizationCreate, error) {
@@ -84,6 +58,8 @@ func (c *Campaigner) OrganizationCreate(org Organization) (ResponseOrganizationC
 	return result, nil
 }
 
+// Delete an organization by it's ID.
+//
 // TODO(error-checking): Are there other HTTP status codes to check for?
 func (c *Campaigner) OrganizationDelete(id int64) error {
 	// Setup.
@@ -110,3 +86,66 @@ func (c *Campaigner) OrganizationDelete(id int64) error {
 		return fmt.Errorf("organization delete failed, unspecified error: %s", b)
 	}
 }
+
+// Find an organization by it's name.
+func (c *Campaigner) OrganizationFind(n string) (ResponseOrganizationList, error) {
+	// Setup.
+	var (
+		qs = fmt.Sprintf("%s=%s", url2.QueryEscape("filters[name]"), url2.QueryEscape(n))
+		url = fmt.Sprintf("/api/3/organizations/?%s", qs)
+		response ResponseOrganizationList
+	)
+
+	// Error check.
+	if len(strings.TrimSpace(n)) == 0 {
+		return response, fmt.Errorf("organization find failed, name is empty")
+	}
+
+	log.Printf("url? %s\n", url)
+
+	// Send GET request.
+	r, b, err := c.get(url)
+	if err != nil {
+		return response, fmt.Errorf("organization find failed. HTTP failure: %s", err)
+	}
+
+	log.Printf("OrganizationFind: status code: %d\n", r.StatusCode)
+
+	err = json.Unmarshal(b, &response)
+	if err != nil {
+		return response, fmt.Errorf("organization list failed, JSON failure: %s", err)
+	}
+
+	return response, nil
+}
+
+// List all organizations.
+func (c *Campaigner) OrganizationList() (ResponseOrganizationList, error) {
+	// Setup.
+	var (
+		url      = "/api/3/organizations"
+		response ResponseOrganizationList
+	)
+
+	// GET request.
+	r, b, err := c.get(url)
+	if err != nil {
+		err.(CustomError).WriteToLog()
+		return response, fmt.Errorf("organization list failed, HTTP failure: %s", err)
+	}
+
+	// Success.
+	// TODO(doc-mismatch): 200 != 201
+	if r.StatusCode == http.StatusOK {
+		err = json.Unmarshal(b, &response)
+		if err != nil {
+			return response, fmt.Errorf("organization list failed, JSON failure: %s", err)
+		}
+
+		return response, nil
+	}
+
+	// Failure (API docs are not clear about errors here).
+	return response, fmt.Errorf("organization list failed, unspecified error: %s", b)
+}
+

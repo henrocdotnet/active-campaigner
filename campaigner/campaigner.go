@@ -87,7 +87,7 @@ func (c *Campaigner) get(url string) (gorequest.Response, []byte, error) {
 	}
 
 	log.Printf("RESPONSE:\n%#v\n", r)
-	log.Printf("BODY:\n%#v\n", b)
+	log.Printf("BODY:\n%#v\n", string(b))
 
 	var pretty bytes.Buffer
 	err := json.Indent(&pretty, b, "", "\t")
