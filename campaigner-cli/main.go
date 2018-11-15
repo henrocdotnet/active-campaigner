@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/henrocdotnet/active-campaigner/campaigner"
-	"github.com/kelseyhightower/envconfig"
 	"log"
 	"os"
 	"strconv"
+
+	"github.com/henrocdotnet/active-campaigner/campaigner"
+	"github.com/kelseyhightower/envconfig"
 )
 
 var (
@@ -14,8 +15,8 @@ var (
 )
 
 type configSetup struct {
-	ApiToken string `envconfig:"api_token"`
-	BaseURL string `envconfig:"base_url"`
+	APIToken string `envconfig:"api_token"`
+	BaseURL  string `envconfig:"base_url"`
 }
 
 func init() {
@@ -29,7 +30,7 @@ func init() {
 func main() {
 	args := os.Args
 
-	c := campaigner.Campaigner{ ApiToken: config.ApiToken, BaseURL: config.BaseURL }
+	c := campaigner.Campaigner{APIToken: config.APIToken, BaseURL: config.BaseURL}
 
 	if len(args) < 2 {
 		printUsage()

@@ -70,8 +70,8 @@ func TestOrganizationCreate_Success(t *testing.T) {
 
 func TestOrganizationDelete_Success(t *testing.T) {
 	var (
-		c = Campaigner{ApiToken: config.ApiKey, BaseURL: config.BaseURL}
-		err = c.OrganizationDelete(testOrganizationID)
+		c          = Campaigner{ApiToken: config.ApiKey, BaseURL: config.BaseURL}
+		err        = c.OrganizationDelete(testOrganizationID)
 		unexpected string
 	)
 
@@ -84,7 +84,7 @@ func TestOrganizationDelete_Success(t *testing.T) {
 
 func TestOrganizationDelete_FailureNotFound(t *testing.T) {
 	var (
-		c = Campaigner{ApiToken: config.ApiKey, BaseURL: config.BaseURL}
+		c         = Campaigner{ApiToken: config.ApiKey, BaseURL: config.BaseURL}
 		invalidID = int64(0)
 	)
 

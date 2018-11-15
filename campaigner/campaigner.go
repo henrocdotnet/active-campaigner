@@ -4,23 +4,19 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/parnurzeal/gorequest"
 	"log"
 	"strings"
+
+	"github.com/parnurzeal/gorequest"
 )
 
 type Campaigner struct {
-	ApiToken string
+	APIToken string
 	BaseURL  string
 }
 
-
-func (c *Campaigner) Bleh() {
-
-}
-
 func (c *Campaigner) CheckConfig() error {
-	if len(c.ApiToken) == 0 {
+	if len(c.APIToken) == 0 {
 		return CustomError{}.SetMessage("campaigner API token not set")
 	} else if len(c.BaseURL) == 0 {
 		return CustomError{}.SetMessage("campaigner base URL not set")
@@ -39,11 +35,11 @@ func (c *Campaigner) GenerateURL(url string) string {
 	return url
 }
 
-func (c *Campaigner) Delete(url string) (gorequest.Response, string, error){
+func (c *Campaigner) Delete(url string) (gorequest.Response, string, error) {
 	// Locals.
 	var (
-		r gorequest.Response
-		b string
+		r    gorequest.Response
+		b    string
 		errs []error
 	)
 
@@ -54,11 +50,11 @@ func (c *Campaigner) Delete(url string) (gorequest.Response, string, error){
 
 	r, b, errs = gorequest.New().
 		Delete(c.GenerateURL(url)).
-		Set("Api-Token", c.ApiToken).
+		Set("Api-Token", c.APIToken).
 		End()
 
 	if errs != nil {
-		return r, b, CustomError{ Message: "could not perform HTTP DELETE request", HttpErrors: errs }
+		return r, b, CustomError{Message: "could not perform HTTP DELETE request", HTTPErrors: errs}
 	}
 
 	return r, b, nil
@@ -67,8 +63,8 @@ func (c *Campaigner) Delete(url string) (gorequest.Response, string, error){
 func (c *Campaigner) get(url string) (gorequest.Response, []byte, error) {
 	// Locals.
 	var (
-		r gorequest.Response
-		b []byte
+		r    gorequest.Response
+		b    []byte
 		errs []error
 	)
 
@@ -83,11 +79,11 @@ func (c *Campaigner) get(url string) (gorequest.Response, []byte, error) {
 
 	r, b, errs = gorequest.New().
 		Get(url).
-		Set("Api-Token", c.ApiToken).
+		Set("Api-Token", c.APIToken).
 		EndBytes()
 
 	if errs != nil {
-		return r, b, CustomError{ Message: "could not perform HTTP GET request", HttpErrors: errs }
+		return r, b, CustomError{Message: "could not perform HTTP GET request", HTTPErrors: errs}
 	}
 
 	log.Printf("RESPONSE:\n%#v\n", r)
@@ -105,14 +101,13 @@ func (c *Campaigner) get(url string) (gorequest.Response, []byte, error) {
 	return r, b, nil
 }
 
-
 // Send a POST request to the Active Campaign API.
 // TODO(error-check): Should check that base URL and API key are at least non-empty.
 func (c *Campaigner) post(url string, i interface{}) (gorequest.Response, []byte, error) {
 	// Locals.
 	var (
-		r gorequest.Response
-		b []byte
+		r    gorequest.Response
+		b    []byte
 		errs []error
 	)
 
@@ -132,12 +127,12 @@ func (c *Campaigner) post(url string, i interface{}) (gorequest.Response, []byte
 	r, b, errs = gorequest.New().
 		Post(url).
 		Send(string(j)).
-		Set("Api-Token", c.ApiToken).
+		Set("Api-Token", c.APIToken).
 		EndBytes()
 
 	// Error check.
 	if errs != nil {
-		return r, b, CustomError{ Message: "could not perform HTTP POST request", HttpErrors: errs }
+		return r, b, CustomError{Message: "could not perform HTTP POST request", HTTPErrors: errs}
 	}
 
 	return r, b, nil
@@ -147,8 +142,8 @@ func (c *Campaigner) post(url string, i interface{}) (gorequest.Response, []byte
 func (c *Campaigner) Put(url string, i interface{}) (gorequest.Response, string, error) {
 	// Locals.
 	var (
-		r gorequest.Response
-		b string
+		r    gorequest.Response
+		b    string
 		errs []error
 	)
 
@@ -167,7 +162,7 @@ func (c *Campaigner) Put(url string, i interface{}) (gorequest.Response, string,
 	r, b, errs = gorequest.New().
 		Post(url).
 		Send(string(j)).
-		Set("Api-Token", c.ApiToken).
+		Set("Api-Token", c.APIToken).
 		End()
 
 	// log.Printf("j: %#v", j)
@@ -180,11 +175,11 @@ func (c *Campaigner) Put(url string, i interface{}) (gorequest.Response, string,
 	log.Printf("BODY:\n%#v\n", b)
 
 	/*
-	var m map[string]interface{}
-	err = json.Unmarshal([]byte(b), &m)
-	if err != nil {
-		panic(err)
-	}
+		var m map[string]interface{}
+		err = json.Unmarshal([]byte(b), &m)
+		if err != nil {
+			panic(err)
+		}
 	*/
 
 	var pretty bytes.Buffer

@@ -109,6 +109,4 @@ func (c *Campaigner) OrganizationDelete(id int64) error {
 		log.Printf("response? %#v\n", r)
 		return fmt.Errorf("organization delete failed, unspecified error: %s", b)
 	}
-
-	return nil
 }

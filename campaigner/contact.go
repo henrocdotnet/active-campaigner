@@ -48,13 +48,12 @@ func (c *Campaigner) ContactList() error {
 	return nil
 }
 
-
 func (c *Campaigner) ContactCreate(contact Contact) (ResponseContactCreate, error) {
 	// Setup.
 	var (
 		result ResponseContactCreate
-		url = "/api/3/contacts"
-		data = map[string]interface{}{
+		url    = "/api/3/contacts"
+		data   = map[string]interface{}{
 			"contact": contact,
 		}
 	)
@@ -72,8 +71,8 @@ func (c *Campaigner) ContactCreate(contact Contact) (ResponseContactCreate, erro
 			return result, fmt.Errorf("contact creation failed, json error: %s", err)
 		}
 
-		writeIndentedJson(path.Join(os.Getenv("TEMP"), "contact_create_response.json"), []byte(body))
-		logFormattedJson("ContactCreate Result:", result)
+		writeIndentedJSON(path.Join(os.Getenv("TEMP"), "contact_create_response.json"), []byte(body))
+		logFormattedJSON("ContactCreate Result:", result)
 
 		return result, nil
 
@@ -88,11 +87,9 @@ func (c *Campaigner) ContactCreate(contact Contact) (ResponseContactCreate, erro
 		}
 
 		return result, apiError
-	} else {
-		return result, fmt.Errorf("contact creation failed, unspecified error: %s", body)
 	}
+	return result, fmt.Errorf("contact creation failed, unspecified error: %s", body)
 }
-
 
 func (c *Campaigner) ContactDelete(id int) error {
 	r, b, err := c.Delete(fmt.Sprintf("/api/3/contacts/%d", id))
@@ -116,7 +113,7 @@ func (c *Campaigner) ContactRead(id int) (ResponseContactRead, error) {
 	// Locals.
 	var (
 		response ResponseContactRead
-		url = fmt.Sprintf("/api/3/contacts/%d", id)
+		url      = fmt.Sprintf("/api/3/contacts/%d", id)
 	)
 
 	// Perform query.
@@ -132,7 +129,7 @@ func (c *Campaigner) ContactRead(id int) (ResponseContactRead, error) {
 		return response, fmt.Errorf("read failed: ID %d general error", id)
 	}
 
-	writeIndentedJson(path.Join(os.Getenv("TEMP"), "contact_read_response.json"), b)
+	writeIndentedJSON(path.Join(os.Getenv("TEMP"), "contact_read_response.json"), b)
 
 	err = json.Unmarshal(b, &response)
 	if err != nil {
