@@ -19,6 +19,7 @@ type unitTest func(*testing.T)
 
 var (
 	config configSetup
+	C Campaigner
 )
 
 // TODO: Move flag parsing into TestMain at some point.
@@ -27,6 +28,8 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	C = Campaigner{APIToken: config.APIToken, BaseURL: config.BaseURL}
 }
 
 

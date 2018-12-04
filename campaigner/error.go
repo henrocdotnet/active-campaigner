@@ -50,8 +50,8 @@ func (e CustomError) Error() string {
 	return fmt.Sprintf("%s (%s)", e.Message, strings.Join(l, ", "))
 }
 
-func (e CustomError) SetMessage(m string) CustomError {
-	e.Message = m
+func (e CustomError) SetMessage(m string, a ...interface{}) CustomError {
+	e.Message = fmt.Sprintf(m, a...)
 	return e
 }
 

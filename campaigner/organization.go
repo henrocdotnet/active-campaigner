@@ -88,6 +88,8 @@ func (c *Campaigner) OrganizationDelete(id int64) error {
 }
 
 // Find an organization by it's name.
+//
+// TODO(API): Figure out if more than one name can be searched (wildcard?  partial name?).
 func (c *Campaigner) OrganizationFind(n string) (ResponseOrganizationList, error) {
 	// Setup.
 	var (

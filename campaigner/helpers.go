@@ -6,7 +6,28 @@ import (
 	"github.com/kr/pretty"
 	"io/ioutil"
 	"log"
+	"regexp"
+	"strconv"
 )
+
+type int64json int64;
+
+func (i int64json) MarshalJSON() ([]byte, error) {
+	return json.Marshal(int64(i))
+}
+
+func (i *int64json) UnmarshalJSON(data []byte) error {
+	re := regexp.MustCompile("[^0-9]")
+	s := re.ReplaceAllString(string(data), "")
+
+	n, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		return err
+	}
+
+	*i = int64json(n)
+	return nil
+}
 
 func dump(i interface{}) {
 	log.Printf("%# v", pretty.Formatter(i))

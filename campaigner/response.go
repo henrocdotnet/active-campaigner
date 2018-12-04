@@ -1,15 +1,7 @@
 package campaigner
 
 type ResponseContactCreate struct {
-	Contact struct {
-		Email        string       `json:"email"`
-		Cdate        string       `json:"cdate"`
-		Udate        string       `json:"udate"`
-		Orgid        string       `json:"orgid"`
-		Links        ContactLinks `json:"links"`
-		ID           string       `json:"id"`
-		Organization string       `json:"organization"`
-	} `json:"contact"`
+	Contact Contact `json:"contact"`
 }
 
 type ResponseContactList struct {
