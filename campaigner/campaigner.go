@@ -75,8 +75,6 @@ func (c *Campaigner) get(url string) (gorequest.Response, []byte, error) {
 
 	url = c.GenerateURL(url)
 
-	log.Printf("Campaigner.Get: Using url %s\n", url)
-
 	r, b, errs = gorequest.New().
 		Get(url).
 		Set("Api-Token", c.APIToken).
@@ -86,17 +84,12 @@ func (c *Campaigner) get(url string) (gorequest.Response, []byte, error) {
 		return r, b, CustomError{Message: "could not perform HTTP GET request", HTTPErrors: errs}
 	}
 
-	log.Printf("RESPONSE:\n%#v\n", r)
-	log.Printf("BODY:\n%#v\n", b)
-
+	// TODO(questions): Not sure if output should be indented by default.  Makes dev easier and indentation should never break things but still smells bad.
 	var pretty bytes.Buffer
 	err := json.Indent(&pretty, b, "", "\t")
 	if err != nil {
 		panic(err)
 	}
-
-	log.Printf("BODY(string):\n %s\n", string(pretty.Bytes()))
-	log.Printf("ERRORS:\n%#v\n", errs)
 
 	return r, b, nil
 }

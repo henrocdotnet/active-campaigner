@@ -4,7 +4,7 @@ package campaigner
 
 // This was generated from JSON returned by a read call.
 type Contact struct {
-	ID           string `json:"id"`
+	ID           int64  `json:"id"`
 	EmailAddress string `json:"email"`
 	PhoneNumber  string `json:"phone"`
 	FirstName    string `json:"firstName"`
