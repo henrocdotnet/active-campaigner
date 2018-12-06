@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/kr/pretty"
 	"log"
 	"os"
 	"regexp"
@@ -30,12 +31,14 @@ func init() {
 }
 
 // TODO(improvements): Arguments hacked in here, spike solution, clean up.
+// TODO(improvements): Errors should probably go to STDERR.
 func main() {
 	args := os.Args
 
 	c := campaigner.Campaigner{APIToken: config.APIToken, BaseURL: config.BaseURL}
 
-	if len(args) < 2 {
+	log.Printf("%#v\n", args)
+	if len(args) < 3 {
 		printUsage()
 		os.Exit(-1)
 	}
@@ -50,6 +53,33 @@ func main() {
 				os.Exit(-1)
 			}
 
+		case "read":
+			id, err := strconv.ParseInt(args[3], 10, 64)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(-1)
+			}
+
+			r, err := c.ContactRead(id)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(-1)
+			}
+			fmt.Printf("% #v\n", pretty.Formatter(r))
+
+		case "tags":
+			id, err := strconv.ParseInt(args[3], 10, 64)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(-1)
+			}
+
+			r, err := c.ContactTagReadByContactID(id)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(-1)
+			}
+			fmt.Printf("% #v\n", pretty.Formatter(r))
 		}
 	case "org":
 		switch args[2] {
@@ -142,4 +172,18 @@ func main() {
 
 func printUsage() {
 	fmt.Printf("%#v\n", os.Args)
+
+	tmpl := `
+Usage:
+	cli <contact|tag|org> 
+
+	contact <list|read>
+		list: List contacts.
+		read <id>: Read contact.
+	
+	org <list>
+		list: List organizations.
+`
+
+	fmt.Println(tmpl)
 }

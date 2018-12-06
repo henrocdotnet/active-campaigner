@@ -134,19 +134,21 @@ func (c *Campaigner) ContactRead(id int64) (ResponseContactRead, error) {
 		return response, fmt.Errorf("read failed: ID %d general error", id)
 	}
 
-	writeIndentedJSON(path.Join(os.Getenv("TEMP"), "contact_read_response.json"), b)
-
 	err = json.Unmarshal(b, &response)
 	if err != nil {
-		return response, fmt.Errorf("could not unmarshal JSON for contact %d: %s", id, err)
+		return response, fmt.Errorf("contact read failed, JSON error: %s", err)
 	}
 
 	return response, nil
 }
 
+// Tags a contact.
+//
 // TODO(API): The API return JSON also includes a contacts[] entry with one contact in it.  Tested this on a tag I know is attached to more than one contact.
 // TODO(API): The API returns different JSON for a request with a bogus ID in it.  contact and tag ID are returned as strings instead of ints.
-func (c *Campaigner) ContactTag(task TaskContactTag) (response ResponseContactTag, err error) {
+// TODO(error-checking): Is it possible to check for a not found error specifically?
+// TODO(error-checking): Nonexistent contact or tag should return a CustomErrorNotFound error.
+func (c *Campaigner) ContactTagCreate(task TaskContactTagCreate) (response ResponseContactTag, err error) {
 	// Setup.
 	var (
 		url  = "/api/3/contactTags"
@@ -174,8 +176,8 @@ func (c *Campaigner) ContactTag(task TaskContactTag) (response ResponseContactTa
 		return response, fmt.Errorf("contact tagging failed, could not find tag: %s", err)
 	}
 
-	log.Println("DUMPING TASK?")
-	dump(task)
+	//log.Println("DUMPING TASK?")
+	//dump(task)
 
 	// Send POST request.
 	r, b, err := c.post(url, data)
@@ -183,11 +185,11 @@ func (c *Campaigner) ContactTag(task TaskContactTag) (response ResponseContactTa
 		return response, fmt.Errorf("contact tagging failed, HTTP error: %s", err)
 	}
 
-	log.Printf("WHERE IS MY BODY? (%d)\n", r.StatusCode)
-	log.Println(string(b))
+	//log.Printf("WHERE IS MY BODY? (%d)\n", r.StatusCode)
+	//log.Println(string(b))
 
 	// Response check.
-	// TODO(API): I am getting both 200 and 201 on this step.  It looks like 201 is returned for a brand new association and 200 if it already existed.
+	// TODO(API): I am getting both 200 and 201 on this step.  It looks like 201 is returned for a brand new association and 200 if it already exists.
 	switch r.StatusCode {
 	case http.StatusOK: // Association already exists.  Response JSON does not include the contacts:[] bit.
 		err := json.Unmarshal(b, &response)
@@ -207,6 +209,66 @@ func (c *Campaigner) ContactTag(task TaskContactTag) (response ResponseContactTa
 
 }
 
+func (c *Campaigner) ContactTagDelete(id int64) error {
+	// Setup.
+	var (
+		url  = fmt.Sprintf("/api/3/contactTags/%d", id)
+	)
+
+	// Send DELETE request.
+	r, b, err := c.Delete(url)
+	if err != nil {
+		return fmt.Errorf("contact tag deletion failed, HTTP failure: %s", err)
+	}
+
+	dump(string(b))
+
+	// Response check.
+	switch r.StatusCode {
+	case http.StatusNotFound:
+		e := new(CustomErrorNotFound)
+		e.Message = fmt.Sprintf("contact tag deletion failed, ID `%d` not found", id)
+		return e
+	case http.StatusOK:
+		return nil
+	default:
+		log.Printf("response? %#v\n", r)
+		return fmt.Errorf("contact tag deletion failed, unspecified error: %s", b)
+	}
+}
+
+func (c *Campaigner) ContactTagReadByContactID(id int64) (response ResponseContactTagRead, err error) {
+	// Setup.
+	var (
+		url  = fmt.Sprintf("/api/3/contacts/%d/contactTags", id)
+	)
+
+	// Send GET request.
+	r, b, err := c.get(url)
+	if err != nil {
+		return response, fmt.Errorf("contact tags read failed, HTTP error: %s", err)
+	}
+
+	// Response check.
+	switch r.StatusCode {
+	case http.StatusNotFound:
+		e := new(CustomErrorNotFound)
+		e.Message = fmt.Sprintf("contact tags read failed, ID `%d` not found", id)
+		return response, e
+
+	case http.StatusOK:
+		if err = json.Unmarshal(b, &response); err != nil {
+			return response, fmt.Errorf("contact tags read failed, JSON error: %s", err)
+		}
+
+		return response, nil
+
+	default:
+		log.Printf("response? %#v\n", r)
+		return response, fmt.Errorf("contact tags read failed, unspecified error: %s", b)
+	}
+}
+
 type ContactTag struct {
 	DateCreated string          `json:"cdate"`
 	ContactID   int64json       `json:"contact"`
@@ -222,4 +284,8 @@ type ContactTagLinks struct {
 
 type ResponseContactTag struct {
 	ContactTag ContactTag `json:"contactTag"`
+}
+
+type ResponseContactTagRead struct {
+	ContactTags []ContactTag `json:"contactTags"`
 }

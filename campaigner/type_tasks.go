@@ -1,6 +1,6 @@
 package campaigner
 
-type TaskContactTag struct {
+type TaskContactTagCreate struct {
 	ContactID int64 `json:"contact"`
 	TagID int64 `json:"tag"`
 }

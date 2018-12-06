@@ -63,6 +63,7 @@ func TestRunTestWithName(t *testing.T) {
 	runTestWithName(t, TestPrint)
 }
 
+// Runs a unit test and prints it's name.
 func runTestWithName(t *testing.T, u unitTest) {
 	rv := reflect.ValueOf(u)
 	name := runtime.FuncForPC(rv.Pointer()).Name()

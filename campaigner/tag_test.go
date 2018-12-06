@@ -1,9 +1,11 @@
 package campaigner
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"log"
 	"testing"
+	"time"
 )
 
 func TestTagCreate_Failure(t *testing.T) {
@@ -31,11 +33,18 @@ func TestTagCreate_Failure(t *testing.T) {
 }
 
 func TestTagCreate_Success(t *testing.T) {
+	now := time.Now()
+	timestamp := fmt.Sprintf("Timestamp: %s_%s", now.Format("20060102"), now.Format("220841"))
+
 	c := Campaigner{APIToken: config.APIToken, BaseURL: config.BaseURL}
-	tag := Tag{ Name: "Test Tag", Description: "Test Tag Description", Type: "contact" }
+	tag := Tag{ Name: fmt.Sprintf("Test Tag %s", timestamp), Description: "Test Tag Description", Type: "contact" }
 
 	r, err := c.TagCreate(tag)
 	dump(r)
+
+	testContactTagID = int64json(r.Tag.ID)
+
+	log.Printf("testContactTagID: %d\n", testContactID)
 
 	assert.Nil(t, err)
 }

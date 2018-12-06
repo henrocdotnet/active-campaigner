@@ -10,6 +10,7 @@ import (
 	"strconv"
 )
 
+// Fixes issues caused by some ID numbers being returned as both strings and numbers in the JSON (from the same API calls).
 type int64json int64;
 
 func (i int64json) MarshalJSON() ([]byte, error) {
@@ -31,6 +32,10 @@ func (i *int64json) UnmarshalJSON(data []byte) error {
 
 func dump(i interface{}) {
 	log.Printf("%# v", pretty.Formatter(i))
+}
+
+func dumpWithMessage(i interface{}, m string) {
+	log.Printf("%s\n%# v", m, pretty.Formatter(i))
 }
 
 
