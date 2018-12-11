@@ -13,21 +13,38 @@ import (
 // TODO(API): Need to add return type here (and return it).
 // TODO(error-checking): Need to add call to CheckConfig before calling API.
 // TODO(error-checking): Needs to return error of some kind.
-func (c *Campaigner) ContactList() error {
-	// Perform the query.
+func (c *Campaigner) ContactList() (response ResponseContactList, err error) {
+	// Setup.
 	url := "/api/3/contacts"
-	_, body, err := c.get(url)
+
+	// Send GET request.
+	r, body, err := c.get(url)
 	if err != nil {
-		err.(CustomError).WriteToLog()
-		return err
+		return response, fmt.Errorf("contact list failed, HTTP error: %s", err)
+	}
+
+	// Response check.
+	switch r.StatusCode {
+	case http.StatusOK:
+		err := json.Unmarshal(body, &response)
+		if err != nil {
+			return response, fmt.Errorf("contact list failed, JSON error: %s", err)
+		}
+
+		return response, nil
+
+	default:
+		return response, fmt.Errorf("contact list failed, unspecified error: %s", body)
 	}
 
 	// Process the result.
+	/*
 	var j map[string]interface{}
 	err = json.Unmarshal(body, &j)
 	if err != nil {
 		log.Fatalf("Could not unmarshal body: %s", err)
 	}
+	*/
 
 	/*
 
@@ -47,10 +64,9 @@ func (c *Campaigner) ContactList() error {
 	*/
 
 	// log.Printf("ContactList: body:\n%s", string(pb.Bytes()))
-	logFormattedJSON("contact list", j)
+	//logFormattedJSON("contact list", j)
 	//log.Printf("ContactList: body:\n%s", string(j))
-
-	return nil
+	//return nil
 }
 
 func (c *Campaigner) ContactCreate(contact Contact) (ResponseContactCreate, error) {

@@ -46,12 +46,36 @@ func main() {
 	switch args[1] {
 	case "contact":
 		switch args[2] {
-		case "list":
-			err := c.ContactList()
+		case "delete":
+			if len(args) != 4 {
+				printUsage();
+				os.Exit(-1)
+			}
+
+			id, err := strconv.Atoi(args[3])
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(-1)
 			}
+
+			err = c.ContactDelete(id)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(-1)
+			}
+
+		case "list":
+			r, err := c.ContactList()
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(-1)
+			}
+
+			fmt.Printf("Listing Contacts:\n\n")
+			for _, y := range r.Contacts {
+				fmt.Printf("\t%d: %s\n", y.ID, y.EmailAddress)
+			}
+			fmt.Println("")
 
 		case "read":
 			id, err := strconv.ParseInt(args[3], 10, 64)
@@ -178,12 +202,13 @@ Usage:
 	cli <contact|tag|org> 
 
 	contact <list|read>
-		list: List contacts.
+		     list: List contacts.
 		read <id>: Read contact.
 	
-	org <list>
-		list: List organizations.
+	org <delete|list>
+		delete <id>: Delete organization.
+		       list: List organizations.
 `
 
-	fmt.Println(tmpl)
+	fmt.Printf(tmpl)
 }

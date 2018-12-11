@@ -6,6 +6,26 @@ type ResponseContactCreate struct {
 
 type ResponseContactList struct {
 	ScoreValues []interface{} `json:"scoreValues"`
+	Contacts    []Contact     `json:"contacts"`
+	Meta        struct {
+		Total     string `json:"total"`
+		PageInput struct {
+			Segmentid  int         `json:"segmentid"`
+			Formid     int         `json:"formid"`
+			Listid     int         `json:"listid"`
+			Tagid      int         `json:"tagid"`
+			Limit      int         `json:"limit"`
+			Offset     int         `json:"offset"`
+			Search     interface{} `json:"search"`
+			Sort       interface{} `json:"sort"`
+			Seriesid   int         `json:"seriesid"`
+			Waitid     int         `json:"waitid"`
+			Status     int         `json:"status"`
+			ForceQuery int         `json:"forceQuery"`
+			Cacheid    string      `json:"cacheid"`
+		} `json:"page_input"`
+	} `json:"meta"`
+	/*
 	Contacts    []struct {
 		Cdate               string        `json:"cdate"`
 		Email               string        `json:"email"`
@@ -39,24 +59,7 @@ type ResponseContactList struct {
 		ID                  string        `json:"id"`
 		Organization        string        `json:"organization"`
 	} `json:"contacts"`
-	Meta struct {
-		Total     string `json:"total"`
-		PageInput struct {
-			Segmentid  int         `json:"segmentid"`
-			Formid     int         `json:"formid"`
-			Listid     int         `json:"listid"`
-			Tagid      int         `json:"tagid"`
-			Limit      int         `json:"limit"`
-			Offset     int         `json:"offset"`
-			Search     interface{} `json:"search"`
-			Sort       interface{} `json:"sort"`
-			Seriesid   int         `json:"seriesid"`
-			Waitid     int         `json:"waitid"`
-			Status     int         `json:"status"`
-			ForceQuery int         `json:"forceQuery"`
-			Cacheid    string      `json:"cacheid"`
-		} `json:"page_input"`
-	} `json:"meta"`
+	*/
 }
 
 type ResponseContactRead struct {
