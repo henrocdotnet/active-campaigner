@@ -37,7 +37,7 @@ func main() {
 
 	c := campaigner.Campaigner{APIToken: config.APIToken, BaseURL: config.BaseURL}
 
-	log.Printf("%#v\n", args)
+	// log.Printf("%#v\n", args)
 	if len(args) < 3 {
 		printUsage()
 		os.Exit(-1)
@@ -48,11 +48,11 @@ func main() {
 		switch args[2] {
 		case "delete":
 			if len(args) != 4 {
-				printUsage();
+				printUsage()
 				os.Exit(-1)
 			}
 
-			id, err := strconv.Atoi(args[3])
+			id, err := strconv.ParseInt(args[3], 10, 64)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(-1)
@@ -108,8 +108,6 @@ func main() {
 	case "org":
 		switch args[2] {
 		case "delete":
-			fmt.Printf("FOUND DELETE ORG\n")
-
 			id, err := strconv.Atoi(args[3])
 			if err != nil {
 				fmt.Println(err)
@@ -130,7 +128,12 @@ func main() {
 				fmt.Println(err)
 				os.Exit(-1)
 			}
-			fmt.Printf("%#v\n", r)
+
+			fmt.Printf("Listing Organizations:\n\n")
+			for _, y := range r.Organizations {
+				fmt.Printf("\t%d: %s (%s)\n", y.ID, y.Name, y.ContactCount)
+			}
+			fmt.Print("\n")
 		}
 	case "tag":
 		switch args[2] {
@@ -208,6 +211,9 @@ Usage:
 	org <delete|list>
 		delete <id>: Delete organization.
 		       list: List organizations.
+	tag <delete|generate|list>
+		list: List tags.
+
 `
 
 	fmt.Printf(tmpl)

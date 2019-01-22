@@ -1,9 +1,11 @@
 package campaigner
 
+// ResponseContactCreate holds a JSON compatible response for creating contacts.
 type ResponseContactCreate struct {
 	Contact Contact `json:"contact"`
 }
 
+// ResponseContactList holds a JSON compatible response for listing contacts.
 type ResponseContactList struct {
 	ScoreValues []interface{} `json:"scoreValues"`
 	Contacts    []Contact     `json:"contacts"`
@@ -62,6 +64,7 @@ type ResponseContactList struct {
 	*/
 }
 
+// ResponseContactRead holds a JSON compatible response for reading contacts.
 type ResponseContactRead struct {
 	Contact            Contact `json:"contact"`
 	ContactAutomations []struct {
@@ -189,6 +192,7 @@ type ResponseContactRead struct {
 	} `json:"geoIps"`
 }
 
+// ResponseOrganizationCreate holds a JSON compatible response for creating organizations.
 type ResponseOrganizationCreate struct {
 	Organization struct {
 		Name  string        `json:"name"`
@@ -197,6 +201,7 @@ type ResponseOrganizationCreate struct {
 	} `json:"organization"`
 }
 
+// ResponseOrganizationList holds a JSON compatible response for listing organizations.
 type ResponseOrganizationList struct {
 	Organizations []Organization `json:"organizations"`
 	Meta          struct {
@@ -204,6 +209,8 @@ type ResponseOrganizationList struct {
 	} `json:"meta"`
 }
 
+// ResponseError holds a list of ActiveCampaign errors.
 type ResponseError struct {
+	// TODO: Not in use, what was I doing here?
 	Errors []ActiveCampaignError
 }

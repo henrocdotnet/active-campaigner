@@ -2,18 +2,16 @@ package campaigner
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
-	"os"
-	"path"
 )
 
-// TODO(API): Need to add return type here (and return it).
-// TODO(error-checking): Need to add call to CheckConfig before calling API.
-// TODO(error-checking): Needs to return error of some kind.
+// ContactList lists contacts.
+//
+// TODO(api): Is there support for searching/filtering?
 func (c *Campaigner) ContactList() (response ResponseContactList, err error) {
+	// TODO(API): Need to add return type here (and return it).
 	// Setup.
 	url := "/api/3/contacts"
 
@@ -36,71 +34,35 @@ func (c *Campaigner) ContactList() (response ResponseContactList, err error) {
 	default:
 		return response, fmt.Errorf("contact list failed, unspecified error: %s", body)
 	}
-
-	// Process the result.
-	/*
-	var j map[string]interface{}
-	err = json.Unmarshal(body, &j)
-	if err != nil {
-		log.Fatalf("Could not unmarshal body: %s", err)
-	}
-	*/
-
-	/*
-
-	// Debug: Write the result to a local file.
-	// TODO: This should use writeIndentedJson function.
-	var pb bytes.Buffer
-	f, err := os.Create("sandbox.local/contact-list.json")
-	if err != nil {
-		panic(err)
-	}
-	defer f.Close()
-	json.Indent(&pb, body, "", "\t")
-	_, err = f.Write(pb.Bytes())
-	if err != nil {
-		panic(err)
-	}
-	*/
-
-	// log.Printf("ContactList: body:\n%s", string(pb.Bytes()))
-	//logFormattedJSON("contact list", j)
-	//log.Printf("ContactList: body:\n%s", string(j))
-	//return nil
 }
 
-func (c *Campaigner) ContactCreate(contact Contact) (ResponseContactCreate, error) {
+// ContactCreate creates a contact.
+func (c *Campaigner) ContactCreate(contact Contact) (result ResponseContactCreate, err error) {
 	// Setup.
 	var (
-		result ResponseContactCreate
 		url    = "/api/3/contacts"
 		data   = map[string]interface{}{
 			"contact": contact,
 		}
 	)
 
-	// POST request.
+	// Send POST request.
 	r, body, err := c.post(url, data)
 	if err != nil {
 		return result, fmt.Errorf("contact creation failed, HTTP error: %s", err)
 	}
 
-	// Success.
-	if r.StatusCode == http.StatusCreated {
+	// Response check.
+	switch r.StatusCode {
+	case http.StatusCreated: // Success.
 		err = json.Unmarshal([]byte(body), &result)
 		if err != nil {
 			return result, fmt.Errorf("contact creation failed, json error: %s", err)
 		}
 
-		writeIndentedJSON(path.Join(os.Getenv("TEMP"), "contact_create_response.json"), []byte(body))
-		logFormattedJSON("ContactCreate Result:", result)
-
 		return result, nil
 
-	}
-
-	// Failure.
-	if r.StatusCode == http.StatusUnprocessableEntity {
+	case http.StatusUnprocessableEntity:
 		var apiError ActiveCampaignError
 		err = json.Unmarshal(body, &apiError)
 		if err != nil {
@@ -108,101 +70,98 @@ func (c *Campaigner) ContactCreate(contact Contact) (ResponseContactCreate, erro
 		}
 
 		return result, apiError
+
+	default:
+		return result, fmt.Errorf("contact creation failed, unspecified error: %s", body)
 	}
-	return result, fmt.Errorf("contact creation failed, unspecified error: %s", body)
 }
 
-func (c *Campaigner) ContactDelete(id int) error {
-	r, b, err := c.Delete(fmt.Sprintf("/api/3/contacts/%d", id))
-
+// ContactDelete deletes a contact.
+func (c *Campaigner) ContactDelete(id int64) error {
+	// TODO(error-checking): Are there specific HTTP codes that can be checked for?
+	// Send DELETE request.
+	r, b, err := c.delete(fmt.Sprintf("/api/3/contacts/%d", id))
 	if err != nil {
-		log.Printf("ERROR CONTACT DELETE: %s\n", err)
-		err.(CustomError).WriteToLog()
-
+		return fmt.Errorf("contact deletion failed, HTTP error: %s", err)
 	}
 
-	if r.StatusCode != 200 {
-		msg := fmt.Sprintf("could not delete contact: %s", b)
-		return errors.New(msg)
+	// Response check.
+	switch r.StatusCode {
+	case http.StatusOK: // Success.
+		return nil
+	default:
+		return fmt.Errorf("could not delete contact: %s", b)
 	}
-
-	return nil
 }
 
-// TODO: Some other junk is being returned besides the contact itself.  Not sure if this should be parsed and wrapped back into the main contact struct.
-func (c *Campaigner) ContactRead(id int64) (ResponseContactRead, error) {
-	// Locals.
-	var (
-		response ResponseContactRead
-		url      = fmt.Sprintf("/api/3/contacts/%d", id)
-	)
+// ContactRead reads a contact.
+func (c *Campaigner) ContactRead(id int64) (response ResponseContactRead, err error) {
+	// TODO(response-parsing): Quite a bit of extra data is being returned besides the contact itself.  Not sure if this should be parsed and wrapped back into the main contact struct.
+	// Setup.
+	var url = fmt.Sprintf("/api/3/contacts/%d", id)
 
-	// Perform query.
-	r, b, err := c.get(url)
+	// Send GET request.
+	r, body, err := c.get(url)
 	if err != nil {
 		return response, err
 	}
 
-	// Error check.
-	if r.StatusCode == http.StatusNotFound { // Contact not found.
-		return response, fmt.Errorf("read failed: ID %d not found", id)
-	} else if r.StatusCode != http.StatusOK { // Other error.
-		return response, fmt.Errorf("read failed: ID %d general error", id)
-	}
+	// Response check.
+	switch r.StatusCode {
+	case http.StatusOK: // Success.
+		err = json.Unmarshal(body, &response)
+		if err != nil {
+			return response, fmt.Errorf("contact read failed, JSON error: %s", err)
+		}
 
-	err = json.Unmarshal(b, &response)
-	if err != nil {
-		return response, fmt.Errorf("contact read failed, JSON error: %s", err)
+		return response, nil
+	case http.StatusNotFound:
+		return response, fmt.Errorf("contact read failed: ID %d not found", id)
+	default:
+		return response, fmt.Errorf("contact read failed: unspecified error: %s", string(body))
 	}
-
-	return response, nil
 }
 
-// Tags a contact.
+// ContactTagCreate links a tag to a contact.
 //
 // TODO(API): The API return JSON also includes a contacts[] entry with one contact in it.  Tested this on a tag I know is attached to more than one contact.
-// TODO(API): The API returns different JSON for a request with a bogus ID in it.  contact and tag ID are returned as strings instead of ints.
-// TODO(error-checking): Is it possible to check for a not found error specifically?
-// TODO(error-checking): Nonexistent contact or tag should return a CustomErrorNotFound error.
-func (c *Campaigner) ContactTagCreate(task TaskContactTagCreate) (response ResponseContactTag, err error) {
+//
+// TODO(API): The API returns different JSON for a request with a bogus ID in it.  The contact and tag ID are returned as strings instead of ints.
+func (c *Campaigner) ContactTagCreate(request RequestContactTagCreate) (response ResponseContactTagCreate, err error) {
+	// TODO(error-checking): Is it possible to check for a not found error specifically?
+	// TODO(error-checking): Nonexistent contact or tag should return a CustomErrorNotFound error.
 	// Setup.
 	var (
 		url  = "/api/3/contactTags"
 		data = map[string]interface{}{
-			"contactTag": task,
+			"contactTag": request,
 		}
 	)
 
 	// API doesn't appear to do much validation on tag or contact IDs passed.
-	if task.TagID < 1 {
+	if request.TagID < 1 {
 		return response, fmt.Errorf("contact tagging failed, task has invalid tag ID")
-	} else if task.ContactID < 1 {
+	} else if request.ContactID < 1 {
 		return response, fmt.Errorf("contact tagging failed, task has invalid contact ID")
 	}
 
 	// Check that contact exists.
-	_, err = c.ContactRead(task.ContactID)
+	_, err = c.ContactRead(request.ContactID)
 	if err != nil {
 		return response, fmt.Errorf("contact tagging failed, could not find contact: %s", err)
 	}
 
 	// Check that tag exists.
-	_, err = c.TagRead(task.TagID)
+	_, err = c.TagRead(request.TagID)
 	if err != nil {
 		return response, fmt.Errorf("contact tagging failed, could not find tag: %s", err)
 	}
-
-	//log.Println("DUMPING TASK?")
-	//dump(task)
 
 	// Send POST request.
 	r, b, err := c.post(url, data)
 	if err != nil {
 		return response, fmt.Errorf("contact tagging failed, HTTP error: %s", err)
 	}
-
-	//log.Printf("WHERE IS MY BODY? (%d)\n", r.StatusCode)
-	//log.Println(string(b))
 
 	// Response check.
 	// TODO(API): I am getting both 200 and 201 on this step.  It looks like 201 is returned for a brand new association and 200 if it already exists.
@@ -225,6 +184,7 @@ func (c *Campaigner) ContactTagCreate(task TaskContactTagCreate) (response Respo
 
 }
 
+// ContactTagDelete removes a tag from a contact.  This removes the "link" and not the tag itself.
 func (c *Campaigner) ContactTagDelete(id int64) error {
 	// Setup.
 	var (
@@ -232,59 +192,56 @@ func (c *Campaigner) ContactTagDelete(id int64) error {
 	)
 
 	// Send DELETE request.
-	r, b, err := c.Delete(url)
+	r, b, err := c.delete(url)
 	if err != nil {
 		return fmt.Errorf("contact tag deletion failed, HTTP failure: %s", err)
 	}
 
-	dump(string(b))
-
 	// Response check.
 	switch r.StatusCode {
+	case http.StatusOK: // Success.
+		return nil
 	case http.StatusNotFound:
 		e := new(CustomErrorNotFound)
 		e.Message = fmt.Sprintf("contact tag deletion failed, ID `%d` not found", id)
 		return e
-	case http.StatusOK:
-		return nil
 	default:
-		log.Printf("response? %#v\n", r)
 		return fmt.Errorf("contact tag deletion failed, unspecified error: %s", b)
 	}
 }
 
+// ContactTagReadByContactID reads assigned tags for a contact by it's ID.
 func (c *Campaigner) ContactTagReadByContactID(id int64) (response ResponseContactTagRead, err error) {
 	// Setup.
-	var (
-		url  = fmt.Sprintf("/api/3/contacts/%d/contactTags", id)
-	)
+	var url  = fmt.Sprintf("/api/3/contacts/%d/contactTags", id)
 
 	// Send GET request.
-	r, b, err := c.get(url)
+	r, body, err := c.get(url)
 	if err != nil {
 		return response, fmt.Errorf("contact tags read failed, HTTP error: %s", err)
 	}
 
 	// Response check.
 	switch r.StatusCode {
-	case http.StatusNotFound:
-		e := new(CustomErrorNotFound)
-		e.Message = fmt.Sprintf("contact tags read failed, ID `%d` not found", id)
-		return response, e
-
-	case http.StatusOK:
-		if err = json.Unmarshal(b, &response); err != nil {
+	case http.StatusOK: // Success.
+		if err = json.Unmarshal(body, &response); err != nil {
 			return response, fmt.Errorf("contact tags read failed, JSON error: %s", err)
 		}
 
 		return response, nil
 
+	case http.StatusNotFound:
+		e := new(CustomErrorNotFound)
+		e.Message = fmt.Sprintf("contact tags read failed, ID `%d` not found", id)
+		return response, e
+
 	default:
 		log.Printf("response? %#v\n", r)
-		return response, fmt.Errorf("contact tags read failed, unspecified error: %s", b)
+		return response, fmt.Errorf("contact tags read failed, unspecified error: %s", string(body))
 	}
 }
 
+// ContactTag holds a JSON compatible contact tag.
 type ContactTag struct {
 	DateCreated string          `json:"cdate"`
 	ContactID   int64json       `json:"contact"`
@@ -293,15 +250,19 @@ type ContactTag struct {
 	Links       ContactTagLinks `json:"links"`
 }
 
+// ContactTagLinks holds a JSON compatible list of contact tag links (nested structure, see ContactTags).
 type ContactTagLinks struct {
+	// TODO(rename): Possibly rename.
 	Contact string `json:"contact"`
 	Tag     string `json:"tag"`
 }
 
-type ResponseContactTag struct {
+// ResponseContactTagCreate holds a JSON compatible response for creating contacts.
+type ResponseContactTagCreate struct {
 	ContactTag ContactTag `json:"contactTag"`
 }
 
+// ResponseContactTagRead holds a JSON compatible response for reading contacts.
 type ResponseContactTagRead struct {
 	ContactTags []ContactTag `json:"contactTags"`
 }

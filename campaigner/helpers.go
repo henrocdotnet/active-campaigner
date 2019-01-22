@@ -11,7 +11,7 @@ import (
 )
 
 // Fixes issues caused by some ID numbers being returned as both strings and numbers in the JSON (from the same API calls).
-type int64json int64;
+type int64json int64
 
 func (i int64json) MarshalJSON() ([]byte, error) {
 	return json.Marshal(int64(i))
@@ -54,9 +54,12 @@ func logFormattedJSON(message string, data interface{}) {
 func writeIndentedJSON(path string, data []byte) {
 	var o bytes.Buffer
 
-	json.Indent(&o, data, "", "\t")
+	err := json.Indent(&o, data, "", "\t")
+	if err != nil {
+		log.Printf("Could not indent JSON: %s", err)
+	}
 
-	err := ioutil.WriteFile(path, o.Bytes(), 0644)
+	err = ioutil.WriteFile(path, o.Bytes(), 0644)
 	if err != nil {
 		log.Printf("Could not write indented json file %s: %s", path, err)
 	}

@@ -2,42 +2,25 @@ package campaigner
 
 import (
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"log"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 var (
-	// Not sure how useful this map will be.  IIRC contact IDs are reused, organization IDs are not.
-	testMap = map[int64]Organization{
-		1: {ID: 1, Name: "lightsaber pizza"},
-		2: {ID: 2, Name: "Test Organization 00001"},
-		3: {ID: 3, Name: "Henroc Test 00019"},
-	}
-
-	testOrganizationID int64
-	testOrganizationName string
+	testOrganizationID = int64(1)
+	testOrganizationName = "lightsaber pizza"
 )
 
 // This is run by TestMain.  Tests are called in order.
-func TestOrganizations(t *testing.T) {
-	runTestWithName(t, TestOrganizationList_Success)
-	runTestWithName(t, TestOrganizationCreate_FailureEmpty)
-	runTestWithName(t, TestOrganizationCreate_Success)
-	runTestWithName(t, TestOrganizationDelete_FailureNotFound)
-	runTestWithName(t, TestOrganizationDelete_Success)
-}
-
-func TestOrganizationList_Success(t *testing.T) {
-	c := Campaigner{APIToken: config.APIToken, BaseURL: config.BaseURL}
-
-	_, err := c.OrganizationList()
-	if err != nil {
-		log.Println(err)
-	}
-
-	assert.Nil(t, err)
+func TestOrganizationSuite(t *testing.T) {
+	runTestWithPackagePath(t, TestOrganizationList_Success)
+	runTestWithPackagePath(t, TestOrganizationCreate_FailureEmpty)
+	runTestWithPackagePath(t, TestOrganizationCreate_Success)
+	runTestWithPackagePath(t, TestOrganizationFind_FailureNameEmpty)
+	runTestWithPackagePath(t, TestOrganizationFind_Success)
+	runTestWithPackagePath(t, TestOrganizationDelete_FailureNotFound)
+	runTestWithPackagePath(t, TestOrganizationDelete_Success)
 }
 
 func TestOrganizationCreate_FailureEmpty(t *testing.T) {
@@ -45,22 +28,21 @@ func TestOrganizationCreate_FailureEmpty(t *testing.T) {
 	c := Campaigner{APIToken: config.APIToken, BaseURL: config.BaseURL}
 
 	resp, err := c.OrganizationCreate(o)
-	if err != nil {
-		log.Printf("Found expected error: %s\n", err)
-	}
 
 	assert.NotNil(t, err)
 	assert.Empty(t, resp.Organization.ID)
 }
 
 func TestOrganizationCreate_Success(t *testing.T) {
-	o := testMap[2]
-	log.Printf("%s\n", o.Name)
+	// Setup.
+	testOrganizationName = fmt.Sprintf("Test Organization %s", NOW)
+	org := Organization{ Name: testOrganizationName }
 	c := Campaigner{APIToken: config.APIToken, BaseURL: config.BaseURL}
+	log.Printf("%s\n", testOrganizationName)
 
-	resp, err := c.OrganizationCreate(o)
+	resp, err := c.OrganizationCreate(org)
 	if err != nil {
-		log.Printf("TEST ORG CREATE ERROR: %s\n", err)
+		log.Printf("TestOrganizationCreate_Success Error: %s\n", err)
 	}
 
 	testOrganizationID = resp.Organization.ID
@@ -85,9 +67,22 @@ func TestOrganizationDelete_FailureNotFound(t *testing.T) {
 func TestOrganizationDelete_Success(t *testing.T) {
 	var (
 		c          = Campaigner{APIToken: config.APIToken, BaseURL: config.BaseURL}
-		err        = c.OrganizationDelete(testOrganizationID)
 		unexpected string
 	)
+
+	// Create a test organization if running test standalone.
+	if testOrganizationID == 0 {
+		testOrganizationName = fmt.Sprintf("Test Organization %s", NOW)
+		org := Organization{ Name: testOrganizationName }
+		resp, err := c.OrganizationCreate(org)
+		assert.Nil(t, err, "could not create organization for one-off test")
+		if err != nil {
+			return
+		}
+		testOrganizationID = resp.Organization.ID
+	}
+
+	err := c.OrganizationDelete(testOrganizationID)
 
 	if err != nil {
 		unexpected = err.Error()
@@ -97,27 +92,35 @@ func TestOrganizationDelete_Success(t *testing.T) {
 }
 
 func TestOrganizationFind_FailureNameEmpty(t *testing.T) {
-	c := Campaigner{APIToken: config.APIToken, BaseURL: config.BaseURL}
 	names := []string{ "", " "}
 
 	for _, n := range names {
-		_, err := c.OrganizationFind(n)
+		_, err := C.OrganizationFind(n)
 		e := fmt.Sprintf("should have gotten an error for name `%s`", n)
 		assert.NotNil(t, err, e)
 		assert.Equal(t, "organization find failed, name is empty", err.Error(), e)
 	}
 }
 
-
 func TestOrganizationFind_Success(t *testing.T) {
-	c := Campaigner{APIToken: config.APIToken, BaseURL: config.BaseURL}
-	n := testMap[2].Name
+	n := testOrganizationName
 
-	r, err := c.OrganizationFind(n)
-	dump(r)
+	r, err := C.OrganizationFind(n)
 	assert.Nil(t, err)
 	assert.NotEqual(t, 0, r.Meta.Total)
 	assert.Equal(t, 1, len(r.Organizations))
 	assert.Equal(t, n, r.Organizations[0].Name)
 
 }
+
+func TestOrganizationList_Success(t *testing.T) {
+	c := Campaigner{APIToken: config.APIToken, BaseURL: config.BaseURL}
+
+	_, err := c.OrganizationList()
+	if err != nil {
+		log.Println(err)
+	}
+
+	assert.Nil(t, err)
+}
+

@@ -2,7 +2,7 @@ package campaigner
 
 // TODO(organization): Should probably move these back into contact.go.
 
-// This was generated from JSON returned by a read call.
+// Contact holds a JSON compatible contact as it exists in the API.  This was generated from JSON returned by a read call.
 type Contact struct {
 	ID           int64  `json:"id,string"`
 	EmailAddress string `json:"email"`
@@ -44,7 +44,7 @@ type Contact struct {
 	Organization        interface{}   `json:"organization"`
 }
 
-// Not sure what these link to at this point (other than the obvious).
+// ContactLinks holds a JSON compatible collection of links (nested structure, see Contact).  Not sure what these link to at this point (other than the obvious).
 type ContactLinks struct {
 	BounceLogs         string `json:"bounceLogs"`
 	ContactAutomations string `json:"contactAutomations"`

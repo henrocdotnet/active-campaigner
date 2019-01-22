@@ -3,12 +3,12 @@ package campaigner
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
 )
 
+// TagCreate creates a tag.
 func (c *Campaigner) TagCreate(tag Tag) (ResponseTagCreate, error) {
 	// Setup.
 	var (
@@ -23,8 +23,6 @@ func (c *Campaigner) TagCreate(tag Tag) (ResponseTagCreate, error) {
 			"tagType":     tag.Type,
 		},
 	}
-	dump(data)
-	logFormattedJSON("tag create data?", data)
 
 	// Tag check.
 	if len(tag.Name) == 0 {
@@ -39,18 +37,15 @@ func (c *Campaigner) TagCreate(tag Tag) (ResponseTagCreate, error) {
 		return response, fmt.Errorf("tag creation failed, type %s is invalid, possible values are template, contact", tag.Type)
 	}
 
-	// return response, nil
-
 	// POST request.
-	r, b, err := c.post(target, data)
+	r, body, err := c.post(target, data)
 	if err != nil {
-		err.(CustomError).WriteToLog()
 		return response, fmt.Errorf("tag creation failed, HTTP error: %s", err)
 	}
 
 	// Success.
 	if r.StatusCode == http.StatusCreated {
-		err = json.Unmarshal(b, &response)
+		err = json.Unmarshal(body, &response)
 		if err != nil {
 			return response, fmt.Errorf("tag creation failed, JSON error: %s", err)
 		}
@@ -58,13 +53,13 @@ func (c *Campaigner) TagCreate(tag Tag) (ResponseTagCreate, error) {
 		return response, nil
 	}
 
-	dump(r)
-
 	// Failure (API docs are not clear about errors here).
-	return response, fmt.Errorf("tag creation failed, unspecified error: %s", err)
+	return response, fmt.Errorf("tag creation failed, unspecified error (%d): %s", r.StatusCode, string(body))
 }
 
-// TODO(API): This method is not documented.
+// TagDelete deletes a tag.
+//
+// TODO(api): This method is missing in the ActiveCampaign documentation.
 func (c *Campaigner) TagDelete(id int64) error {
 	// Setup.
 	var (
@@ -72,47 +67,42 @@ func (c *Campaigner) TagDelete(id int64) error {
 	)
 
 	// Send DELETE request.
-	r, b, err := c.Delete(target)
+	r, body, err := c.delete(target)
 	if err != nil {
 		return fmt.Errorf("tag deletion failed, HTTP error: %s", err)
 	}
-
-	dump(r)
-	dump(b)
 
 	// Response check.
 	switch r.StatusCode {
 	case http.StatusOK:
 		return nil
 	default:
-		return fmt.Errorf("tag deletion failed, unspecified error: %s", b)
+		return fmt.Errorf("tag deletion failed, unspecified error: %s", string(body))
 	}
 }
 
-// TODO(API): Query parameters aren't documented.
-func (c *Campaigner) TagFind(n string) (ResponseTagList, error) {
+// TagFind searches for a tag by name.  The list of all available filters is not complete.
+//
+// TODO(error-checking: Add HTTP status code checking.
+//
+// TODO(api): Query parameters aren't officially documented.
+func (c *Campaigner) TagFind(n string) (response ResponseTagList, err error) {
 	// Setup.
 	var (
 		qs       = fmt.Sprintf("%s=%s", url.QueryEscape("filters[tag]"), url.QueryEscape(n))
 		target   = fmt.Sprintf("/api/3/tags/?%s", qs)
-		response ResponseTagList
 	)
-	log.Println(target)
 
 	// Error check.
 	if len(strings.TrimSpace(n)) == 0 {
 		return response, fmt.Errorf("tag find failed, name is empty")
 	}
 
-	log.Printf("url? %s\n", target)
-
 	// Send GET request.
-	r, b, err := c.get(target)
+	_, b, err := c.get(target)
 	if err != nil {
 		return response, fmt.Errorf("tag find failed, HTTP error: %s", err)
 	}
-
-	log.Printf("TagFind: status code: %d\n", r.StatusCode)
 
 	err = json.Unmarshal(b, &response)
 	if err != nil {
@@ -122,6 +112,7 @@ func (c *Campaigner) TagFind(n string) (ResponseTagList, error) {
 	return response, nil
 }
 
+// TagList lists all tags.
 func (c *Campaigner) TagList() (ResponseTagList, error) {
 	// Setup.
 	var (
@@ -130,15 +121,14 @@ func (c *Campaigner) TagList() (ResponseTagList, error) {
 	)
 
 	// GET request.
-	r, b, err := c.get(target)
+	r, body, err := c.get(target)
 	if err != nil {
-		err.(CustomError).WriteToLog()
 		return response, fmt.Errorf("tag list failed, HTTP error: %s", err)
 	}
 
 	// Success.
 	if r.StatusCode == http.StatusOK {
-		err = json.Unmarshal(b, &response)
+		err = json.Unmarshal(body, &response)
 		if err != nil {
 			return response, fmt.Errorf("tag list failed, JSON error: %s", err)
 		}
@@ -147,16 +137,18 @@ func (c *Campaigner) TagList() (ResponseTagList, error) {
 	}
 
 	// Failure (API docs are not clear about errors here).
-	return response, fmt.Errorf("tag list failed, unspecified error: %s", err)
+	return response, fmt.Errorf("tag list failed, unspecified error: %s", string(body))
 }
 
-// TODO(API): This is not documented.
+// TagRead reads a tag by it's ID.
+//
+// TODO(api): This endpoint is not documented.
 func (c *Campaigner) TagRead(id int64) (response ResponseTagRead, err error) {
 	// Setup.
 	var target = fmt.Sprintf("/api/3/tags/%d", id)
 
 	// Get request.
-	r, b, err := c.get(target)
+	r, body, err := c.get(target)
 	if err != nil {
 		return response, fmt.Errorf("tag read failed, HTTP error: %s", err)
 	}
@@ -164,7 +156,7 @@ func (c *Campaigner) TagRead(id int64) (response ResponseTagRead, err error) {
 	// Response check.
 	switch r.StatusCode {
 	case http.StatusOK:
-		err := json.Unmarshal(b, &response)
+		err := json.Unmarshal(body, &response)
 		if err != nil {
 			return response, fmt.Errorf("tag read failed, JSON error: %s", err)
 		}
@@ -177,10 +169,11 @@ func (c *Campaigner) TagRead(id int64) (response ResponseTagRead, err error) {
 		return response, e
 
 	default:
-		return response, fmt.Errorf("tag read failed, unspecified error (%d): %s", r.StatusCode, string(b))
+		return response, fmt.Errorf("tag read failed, unspecified error (%d): %s", r.StatusCode, string(body))
 	}
 }
 
+// Tag holds a JSON compatible tag as it exists in the API.
 type Tag struct {
 	ID              int64    `json:"id,string"`
 	Type            string   `json:"tagType"`
@@ -191,14 +184,17 @@ type Tag struct {
 	Links           TagLinks `json:"links"`
 }
 
+// TagLinks holds a JSON compatible list of links (nested structure).
 type TagLinks struct {
 	ContactGoalTags string `json:"contactGoalTags"`
 }
 
+// ResponseTagCreate holds a JSON compatible response for creating tags.
 type ResponseTagCreate struct {
 	Tag Tag `json:"tag"`
 }
 
+// ResponseTagList holds a JSON compatible response for listing tags.
 type ResponseTagList struct {
 	Tags []Tag `json:"tags"`
 	Meta struct {
@@ -206,6 +202,7 @@ type ResponseTagList struct {
 	} `json:"meta"`
 }
 
+// ResponseTagRead holds a JSON compatible response for reading tags.
 type ResponseTagRead struct {
 	Tag Tag `json:"tag"`
 }

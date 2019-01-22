@@ -9,7 +9,7 @@ else
 	EXE_EXT=''
 endif
 
-all: test build-echo-server
+all: build-cli
 
 build-cli:
 	$(GOBUILD) -o bin/cli$(EXE_EXT) ./campaigner-cli/

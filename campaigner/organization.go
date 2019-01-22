@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-// Represents an organization as it exists in the API.
+// Organization holds a JSON compatible organization as it exists in the API.
 type Organization struct {
 	Name         string        `json:"name"`
 	Links        []interface{} `json:"links"`
@@ -17,7 +17,9 @@ type Organization struct {
 	ContactCount string        `json:"contactCount"`
 	DealCount    string        `json:"dealCount"`
 }
+// TODO(api): Contact and deal counts should probably not be strings.
 
+// OrganizationCreate creates an organization.
 func (c *Campaigner) OrganizationCreate(org Organization) (ResponseOrganizationCreate, error) {
 	var (
 		url  = "/api/3/organizations"
@@ -29,7 +31,6 @@ func (c *Campaigner) OrganizationCreate(org Organization) (ResponseOrganizationC
 
 	r, b, err := c.post(url, data)
 	if err != nil {
-		err.(CustomError).WriteToLog()
 		return result, fmt.Errorf("could not creation organization, HTTP failure: %s", err)
 	}
 
@@ -58,7 +59,7 @@ func (c *Campaigner) OrganizationCreate(org Organization) (ResponseOrganizationC
 	return result, nil
 }
 
-// Delete an organization by it's ID.
+// OrganizationDelete deletes an organization by it's ID.
 //
 // TODO(error-checking): Are there other HTTP status codes to check for?
 func (c *Campaigner) OrganizationDelete(id int64) error {
@@ -68,7 +69,7 @@ func (c *Campaigner) OrganizationDelete(id int64) error {
 	)
 
 	// Send DELETE request.
-	r, b, err := c.Delete(url)
+	r, b, err := c.delete(url)
 	if err != nil {
 		return fmt.Errorf("organization delete failed, HTTP failure: %s", err)
 	}
@@ -87,7 +88,7 @@ func (c *Campaigner) OrganizationDelete(id int64) error {
 	}
 }
 
-// Find an organization by it's name.
+// OrganizationFind finds an organization by it's name.
 //
 // TODO(API): Figure out if more than one name can be searched (wildcard?  partial name?).
 func (c *Campaigner) OrganizationFind(n string) (ResponseOrganizationList, error) {
@@ -121,7 +122,7 @@ func (c *Campaigner) OrganizationFind(n string) (ResponseOrganizationList, error
 	return response, nil
 }
 
-// List all organizations.
+// OrganizationList lists all organizations.
 func (c *Campaigner) OrganizationList() (ResponseOrganizationList, error) {
 	// Setup.
 	var (
@@ -132,7 +133,6 @@ func (c *Campaigner) OrganizationList() (ResponseOrganizationList, error) {
 	// GET request.
 	r, b, err := c.get(url)
 	if err != nil {
-		err.(CustomError).WriteToLog()
 		return response, fmt.Errorf("organization list failed, HTTP failure: %s", err)
 	}
 

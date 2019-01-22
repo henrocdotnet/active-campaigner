@@ -10,11 +10,13 @@ import (
 	"github.com/parnurzeal/gorequest"
 )
 
+// Campaigner is a library for interacting with ActiveCampaign.
 type Campaigner struct {
 	APIToken string
 	BaseURL  string
 }
 
+// CheckConfig checks that API Token and BaseURL have been defined.
 func (c *Campaigner) CheckConfig() error {
 	if len(c.APIToken) == 0 {
 		return CustomError{}.SetMessage("campaigner API token not set")
@@ -25,6 +27,7 @@ func (c *Campaigner) CheckConfig() error {
 	return nil
 }
 
+// GenerateURL returns a full API URL using the configured BaseURL and a suffix (API endpoint).
 func (c *Campaigner) GenerateURL(url string) string {
 	if strings.HasPrefix(url, "/") {
 		url = strings.Replace(url, "/", "", 1)
@@ -35,7 +38,7 @@ func (c *Campaigner) GenerateURL(url string) string {
 	return url
 }
 
-func (c *Campaigner) Delete(url string) (gorequest.Response, string, error) {
+func (c *Campaigner) delete(url string) (gorequest.Response, string, error) {
 	// Locals.
 	var (
 		r    gorequest.Response
@@ -95,7 +98,6 @@ func (c *Campaigner) get(url string) (gorequest.Response, []byte, error) {
 }
 
 // Send a POST request to the Active Campaign API.
-// TODO(error-check): Should check that base URL and API key are at least non-empty.
 func (c *Campaigner) post(url string, i interface{}) (gorequest.Response, []byte, error) {
 	// Locals.
 	var (
@@ -132,7 +134,7 @@ func (c *Campaigner) post(url string, i interface{}) (gorequest.Response, []byte
 }
 
 // TODO(cleanup): Not being used just yet.
-func (c *Campaigner) Put(url string, i interface{}) (gorequest.Response, string, error) {
+func (c *Campaigner) put(url string, i interface{}) (gorequest.Response, string, error) {
 	// Locals.
 	var (
 		r    gorequest.Response

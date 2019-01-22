@@ -14,5 +14,7 @@ require (
 	github.com/smartystreets/assertions v0.0.0-20180927180507-b2de0cb4f26d // indirect
 	github.com/smartystreets/goconvey v0.0.0-20181108003508-044398e4856c // indirect
 	github.com/stretchr/testify v1.2.2
+	golang.org/x/lint v0.0.0-20181217174547-8f45f776aaf1 // indirect
 	golang.org/x/net v0.0.0-20181108082009-03003ca0c849 // indirect
+	golang.org/x/tools v0.0.0-20190118193359-16909d206f00 // indirect
 )

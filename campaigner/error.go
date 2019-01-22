@@ -6,10 +6,13 @@ import (
 	"strings"
 )
 
+// ActiveCampaignError holds a JSON compatible API error (nested structure, see ResponseError).
 type ActiveCampaignError struct {
+	// TODO(move): me.
 	Errors []ActiveCampaignErrorLine
 }
 
+// Error satisfies the error interface.  Generates and returns the error string.
 func (e ActiveCampaignError) Error() string {
 	var o []string
 
@@ -20,6 +23,7 @@ func (e ActiveCampaignError) Error() string {
 	return fmt.Sprintf("ActiveCampaign error: %s", strings.Join(o, ", "))
 }
 
+// ActiveCampaignErrorLine holds a JSON compatible API error line (nested structure, see ActiveCampaignError).
 type ActiveCampaignErrorLine struct {
 	Code   string                    `json:"code"`
 	Detail string                    `json:"detail"`
@@ -27,20 +31,25 @@ type ActiveCampaignErrorLine struct {
 	Title  string                    `json:"title"`
 }
 
+// ActiveCampaignErrorSource holds a JSON compatible API error source (nested structure, see ActiveCampaignErrorLine).
 type ActiveCampaignErrorSource struct {
 	Pointer string `json:"pointer"`
 }
 
+// ActiveCampaignErrorList holds a JSON compatible list of API error lines (nested structure, see ActiveCampaignErrorLine).
 type ActiveCampaignErrorList struct {
+	// TODO(api): Remove this (probably, unused at the moment, try to think back).
 	List []ActiveCampaignErrorLine `json:"errors"`
 }
 
-// TODO(naming): Rename this.
+// CustomError holds a group of HTTP errors during an API call.  Allows more than one error to be returned at a time.
 type CustomError struct {
+		// TODO(naming): Rename this.
 	HTTPErrors []error
 	Message    string
 }
 
+// Error satisfies the error interface.  Generates and returns the error string.
 func (e CustomError) Error() string {
 	var l []string
 
@@ -50,11 +59,13 @@ func (e CustomError) Error() string {
 	return fmt.Sprintf("%s (%s)", e.Message, strings.Join(l, ", "))
 }
 
+// SetMessage sets the error message string (sprintf style).
 func (e CustomError) SetMessage(m string, a ...interface{}) CustomError {
 	e.Message = fmt.Sprintf(m, a...)
 	return e
 }
 
+// WriteToLog logs the contents of an error.
 func (e CustomError) WriteToLog() {
 	var (
 		list   []string
@@ -70,6 +81,7 @@ func (e CustomError) WriteToLog() {
 	log.Printf(output)
 }
 
+// CustomErrorNotFound is an error subtype that allows for a specific condition to be checked for.
 type CustomErrorNotFound struct {
 	CustomError
 }
