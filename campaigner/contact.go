@@ -184,6 +184,45 @@ func (c *Campaigner) ContactTagCreate(request RequestContactTagCreate) (response
 
 }
 
+func (c *Campaigner) ContactFieldUpdate(contactID int64, fieldID int64, value string) (response interface{}, err error) {
+	// Setup.
+	u := "/api/3/fieldValues"
+
+	// Check that the contact exists.
+	_, err = c.ContactRead(contactID)
+	if err != nil {
+		return response, fmt.Errorf("contact field update failed, could not find contact: %s", err)
+	}
+
+	// Check that the field exists.
+	_, err = c.FieldRead(fieldID)
+	if err != nil {
+		return response, fmt.Errorf("contact field update failed, could not find field: %s", err)
+	}
+
+	// Send POST request.
+	req := RequestContactFieldUpdate{ContactID: contactID, FieldID: fieldID, Value: value}
+	data := map[string]interface{}{ "fieldValue": req}
+	r, body, err := c.post(u, data)
+	if err != nil {
+		return response, fmt.Errorf("contact field update failed, HTTP error: %s", err)
+	}
+
+	// Response check.
+	switch r.StatusCode {
+	case http.StatusOK:
+		err = json.Unmarshal(body, &response)
+		if err != nil {
+			return response, fmt.Errorf("contact field update failed, JSON error: %s", err)
+		}
+
+		return response, nil
+	}
+
+
+	return response, fmt.Errorf("contact field update failed, unspecified error (%d): %s", r.StatusCode, string(body))
+}
+
 // ContactTagDelete removes a tag from a contact.  This removes the "link" and not the tag itself.
 func (c *Campaigner) ContactTagDelete(id int64) error {
 	// Setup.

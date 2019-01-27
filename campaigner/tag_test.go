@@ -47,10 +47,7 @@ func TestTagCreate_Success(t *testing.T) {
 	timestamp := fmt.Sprintf("Timestamp: %s_%s", now.Format("20060102"), now.Format("220841.000"))
 	tag := Tag{ Name: fmt.Sprintf("Test Tag %s", timestamp), Description: "Test Tag Description", Type: "contact" }
 
-	dump(tag)
 	r, err := C.TagCreate(tag)
-
-	dump(r)
 
 	testContactTagID = int64json(r.Tag.ID)
 

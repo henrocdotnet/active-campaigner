@@ -17,3 +17,20 @@ class ActiveCampaignerTagConstants
 
 }
 `
+
+const fieldsTemplate = `
+<?php
+
+
+class ActiveCampaignerFieldConstants
+{
+
+{{- range $x, $y := .Fields }}
+
+    // {{ $y.Title }}
+    const {{ $y.Title | cleanTagName }} = {{ $y.ID }};
+
+{{- end }}
+
+}
+`

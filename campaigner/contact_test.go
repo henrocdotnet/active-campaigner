@@ -2,9 +2,11 @@ package campaigner
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"
+	"time"
 )
 
 // TODO(cleanup): Remove references to globals key and baseURL
@@ -91,6 +93,15 @@ func TestContactCreate_Success(t *testing.T) {
 
 func TestContactDelete_Success(t *testing.T) {
 	err := C.ContactDelete(testContactID)
+	assert.Nil(t, err)
+}
+
+
+func TestContactFieldUpdate_Success(t *testing.T) {
+	now := time.Now()
+	v := fmt.Sprintf("test value %s_%s", now.Format("20060102"), now.Format("220841.000"))
+
+	_, err := C.ContactFieldUpdate(testContactID, 2, v)
 	assert.Nil(t, err)
 }
 

@@ -192,23 +192,6 @@ type ResponseContactRead struct {
 	} `json:"geoIps"`
 }
 
-// ResponseOrganizationCreate holds a JSON compatible response for creating organizations.
-type ResponseOrganizationCreate struct {
-	Organization struct {
-		Name  string        `json:"name"`
-		Links []interface{} `json:"links"`
-		ID    int64         `json:"id,string"`
-	} `json:"organization"`
-}
-
-// ResponseOrganizationList holds a JSON compatible response for listing organizations.
-type ResponseOrganizationList struct {
-	Organizations []Organization `json:"organizations"`
-	Meta          struct {
-		Total int64 `json:"total,string"`
-	} `json:"meta"`
-}
-
 // ResponseError holds a list of ActiveCampaign errors.
 type ResponseError struct {
 	// TODO: Not in use, what was I doing here?

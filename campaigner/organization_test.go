@@ -3,7 +3,6 @@ package campaigner
 import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
-	"log"
 	"testing"
 )
 
@@ -17,6 +16,8 @@ func TestOrganizationSuite(t *testing.T) {
 	runTestWithPackagePath(t, TestOrganizationList_Success)
 	runTestWithPackagePath(t, TestOrganizationCreate_FailureEmpty)
 	runTestWithPackagePath(t, TestOrganizationCreate_Success)
+	runTestWithPackagePath(t, TestOrganizationRead_Failure)
+	runTestWithPackagePath(t, TestOrganizationRead_Success)
 	runTestWithPackagePath(t, TestOrganizationFind_FailureNameEmpty)
 	runTestWithPackagePath(t, TestOrganizationFind_Success)
 	runTestWithPackagePath(t, TestOrganizationDelete_FailureNotFound)
@@ -38,12 +39,8 @@ func TestOrganizationCreate_Success(t *testing.T) {
 	testOrganizationName = fmt.Sprintf("Test Organization %s", NOW)
 	org := Organization{ Name: testOrganizationName }
 	c := Campaigner{APIToken: config.APIToken, BaseURL: config.BaseURL}
-	log.Printf("%s\n", testOrganizationName)
 
 	resp, err := c.OrganizationCreate(org)
-	if err != nil {
-		log.Printf("TestOrganizationCreate_Success Error: %s\n", err)
-	}
 
 	testOrganizationID = resp.Organization.ID
 
@@ -117,10 +114,21 @@ func TestOrganizationList_Success(t *testing.T) {
 	c := Campaigner{APIToken: config.APIToken, BaseURL: config.BaseURL}
 
 	_, err := c.OrganizationList()
-	if err != nil {
-		log.Println(err)
-	}
 
 	assert.Nil(t, err)
 }
 
+func TestOrganizationRead_Failure(t *testing.T) {
+	badID := int64(-1)
+
+	_, err := C.OrganizationRead(badID)
+
+	assert.NotNil(t, err)
+}
+
+func TestOrganizationRead_Success(t *testing.T) {
+	r, err := C.OrganizationRead(testOrganizationID)
+	assert.Nil(t, err)
+	assert.Equal(t, testOrganizationID, r.Organization.ID)
+	assert.NotEmpty(t, r.Organization.Name)
+}

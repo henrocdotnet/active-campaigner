@@ -15,10 +15,10 @@ import (
 )
 
 var (
-	config configSetup
+	config EnvConfig
 )
 
-type configSetup struct {
+type EnvConfig struct {
 	APIToken string `envconfig:"api_token"`
 	BaseURL  string `envconfig:"base_url"`
 }
@@ -163,29 +163,42 @@ func main() {
 			}
 			fmt.Printf("Tag %d deleted successfully.\n", id)
 		case "generate":
+			fMap := template.FuncMap{
+				"cleanTagName": func(s string) string {
+					re, err := regexp.Compile("[^a-zA-Z0-9]+")
+					if err != nil {
+						fmt.Println(err)
+						os.Exit(-1)
+					}
+					s = re.ReplaceAllString(s, "")
+
+					return s
+				},
+			}
+
 			r, err := c.TagList()
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(-1)
 			}
-
-			t := template.Must(template.New("template").
-				Funcs(template.FuncMap{
-					"cleanTagName": func(s string) string {
-						re, err := regexp.Compile("[^a-zA-Z0-9]+")
-						if err != nil {
-							fmt.Println(err)
-							os.Exit(-1)
-						}
-						s = re.ReplaceAllString(s, "")
-
-						// s = strings.Replace()
-
-						return s
-					},
-				}).
+			t1 := template.Must(template.New("template").
+				Funcs(fMap).
 				Parse(classTemplate))
-			err = t.Execute(os.Stdout, r)
+			err = t1.Execute(os.Stdout, r)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(-1)
+			}
+
+			fields, err := c.FieldList()
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(-1)
+			}
+			t2 := template.Must(template.New("template").
+				Funcs(fMap).
+				Parse(fieldsTemplate))
+			err = t2.Execute(os.Stdout, fields)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(-1)
