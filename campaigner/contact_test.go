@@ -13,7 +13,7 @@ import (
 
 var (
 	testContactID    = int64(1)
-	testContactTagID = int64json(0)
+	testContactTagID = Int64json(0)
 )
 
 // Tests all contact functionality as a group.  The created contact is used by other tests.
@@ -43,13 +43,6 @@ func TestContactTaggingSuite(t *testing.T) {
 func TestContactList(t *testing.T) {
 	// TODO(unit-test): Should check the internals of the ResponseContactList value.
 	_, err := C.ContactList()
-	assert.Nil(t, err)
-}
-
-func TestContactRead(t *testing.T) {
-	r, err := C.ContactRead(testContactID)
-
-	assert.NotNil(t, r)
 	assert.Nil(t, err)
 }
 
@@ -84,6 +77,13 @@ func TestContactCreate_Success(t *testing.T) {
 		PhoneNumber:  config.UnitTestPhone,
 	}
 
+	contact = Contact{
+		FirstName:    "Test",
+		LastName:     "User",
+		EmailAddress: "test@user.com",
+		PhoneNumber:  "2125551212",
+	}
+
 	r, err := C.ContactCreate(contact)
 
 	assert.NotNil(t, r)
@@ -94,6 +94,35 @@ func TestContactCreate_Success(t *testing.T) {
 func TestContactDelete_Success(t *testing.T) {
 	err := C.ContactDelete(testContactID)
 	assert.Nil(t, err)
+}
+
+func TestContactRead(t *testing.T) {
+	r, err := C.ContactRead(testContactID)
+
+	assert.NotNil(t, r)
+	assert.Nil(t, err)
+}
+
+// TODO(unit-testing) Complete  this test.
+func TestContactUpdate_Success(t *testing.T) {
+	id := int64(35)
+	con, err := C.ContactRead(id)
+	require.Nil(t, err)
+
+	req := RequestContactUpdate{
+		ID: con.Contact.ID,
+		EmailAddress: con.Contact.EmailAddress,
+		FirstName: con.Contact.FirstName,
+		LastName: con.Contact.LastName,
+		PhoneNumber: con.Contact.PhoneNumber,
+		OrganizationID: 1,
+	}
+	_, err = C.ContactUpdate(id, req)
+	assert.Nil(t, err)
+
+	r, err := C.ContactRead(id)
+	assert.Nil(t, err)
+	dump(r)
 }
 
 

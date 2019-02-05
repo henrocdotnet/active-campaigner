@@ -83,7 +83,7 @@ func (c *Campaigner) FieldList() (response ResponseFieldList, err error) {
 	return response, fmt.Errorf("field list failed, unspecified error (%d): %s", r.StatusCode, string(body))
 }
 
-//FieldRead reads a custom field.
+// FieldRead reads a custom field.
 func (c *Campaigner) FieldRead(id int64) (response ResponseFieldRead, err error) {
 	// Setup.
 	u := fmt.Sprintf("/api/3/fields/%d", id)

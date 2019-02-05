@@ -105,6 +105,19 @@ func main() {
 			}
 			fmt.Printf("% #v\n", pretty.Formatter(r))
 		}
+	case "field":
+		switch args[2] {
+		case "list":
+			r, err := c.FieldList()
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(-1)
+			}
+
+			for _, y := range(r.Fields) {
+				fmt.Printf("\tID: %d, Title: %s\n", y.ID, y.Title)
+			}
+		}
 	case "org":
 		switch args[2] {
 		case "delete":

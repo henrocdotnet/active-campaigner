@@ -4,15 +4,15 @@ package campaigner
 
 // Contact holds a JSON compatible contact as it exists in the API.  This was generated from JSON returned by a read call.
 type Contact struct {
-	ID           int64  `json:"id,string"`
-	EmailAddress string `json:"email"`
-	PhoneNumber  string `json:"phone"`
-	FirstName    string `json:"firstName"`
-	LastName     string `json:"lastName"`
-	OrgID        string `json:"orgid"`
+	ID             int64     `json:"id,string"`
+	EmailAddress   string    `json:"email"`
+	PhoneNumber    string    `json:"phone"`
+	FirstName      string    `json:"firstName"`
+	LastName       string    `json:"lastName"`
+	OrganizationID Int64json `json:"orgid"`
 
-	DateCreated string `json:"cdate"`
-	DateUpdated string `json:"udate"`
+	DateCreated string `json:"cdate,omitempty"`
+	DateUpdated string `json:"udate,omitempty"`
 	DateDeleted string `json:"deleted_at"`
 	IsDeleted   int    `json:"deleted,string"`
 
@@ -62,4 +62,9 @@ type ContactLinks struct {
 	PlusAppend         string `json:"plusAppend"`
 	TrackingLogs       string `json:"trackingLogs"`
 	ScoreValues        string `json:"scoreValues"`
+}
+
+// ResponseContactUpdate holds a JSON compatible response for updating contacts.
+type ResponseContactUpdate struct {
+	Contact Contact `json:"contact"`
 }

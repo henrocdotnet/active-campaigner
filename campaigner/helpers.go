@@ -11,13 +11,13 @@ import (
 )
 
 // Fixes issues caused by some ID numbers being returned as both strings and numbers in the JSON (from the same API calls).
-type int64json int64
+type Int64json int64
 
-func (i int64json) MarshalJSON() ([]byte, error) {
+func (i Int64json) MarshalJSON() ([]byte, error) {
 	return json.Marshal(int64(i))
 }
 
-func (i *int64json) UnmarshalJSON(data []byte) error {
+func (i *Int64json) UnmarshalJSON(data []byte) error {
 	re := regexp.MustCompile("[^0-9]")
 	s := re.ReplaceAllString(string(data), "")
 
@@ -26,7 +26,7 @@ func (i *int64json) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	*i = int64json(n)
+	*i = Int64json(n)
 	return nil
 }
 

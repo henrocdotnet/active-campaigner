@@ -117,6 +117,8 @@ func (c *Campaigner) post(url string, i interface{}) (gorequest.Response, []byte
 	if err != nil {
 		log.Fatalf("Could not marshal json for interface: %s\n", err)
 	}
+	// log.Println("Data Payload:")
+	// log.Println(string(j))
 
 	// Send POST request.
 	r, b, errs = gorequest.New().
@@ -133,7 +135,6 @@ func (c *Campaigner) post(url string, i interface{}) (gorequest.Response, []byte
 	return r, b, nil
 }
 
-// TODO(cleanup): Not being used just yet.
 func (c *Campaigner) put(url string, i interface{}) (gorequest.Response, string, error) {
 	// Locals.
 	var (
@@ -153,29 +154,14 @@ func (c *Campaigner) put(url string, i interface{}) (gorequest.Response, string,
 	if err != nil {
 		log.Fatalf("Could not marshall json for interface: %s\n", err)
 	}
+	// log.Println("Data Payload:")
+	// log.Println(string(j))
 
 	r, b, errs = gorequest.New().
 		Post(url).
 		Send(string(j)).
 		Set("Api-Token", c.APIToken).
 		End()
-
-	// log.Printf("j: %#v", j)
-	// log.Printf("r: %#v", r)
-	// log.Printf("b: %#v", b)
-	// log.Printf("errs: %#v", errs)
-
-	log.Printf("\nDATA SENT:\n %#v", j)
-	log.Printf("RESPONSE:\n%#v\n", r)
-	log.Printf("BODY:\n%#v\n", b)
-
-	/*
-		var m map[string]interface{}
-		err = json.Unmarshal([]byte(b), &m)
-		if err != nil {
-			panic(err)
-		}
-	*/
 
 	var pretty bytes.Buffer
 	err = json.Indent(&pretty, []byte(b), "", "\t")

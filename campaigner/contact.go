@@ -37,12 +37,21 @@ func (c *Campaigner) ContactList() (response ResponseContactList, err error) {
 }
 
 // ContactCreate creates a contact.
+//
 func (c *Campaigner) ContactCreate(contact Contact) (result ResponseContactCreate, err error) {
+	// TODO(api): The struct used in the request has to be rebuilt as AC does not like all of the extra fields in a "real contact".  This
+	//            might be caused by sending the organization ID in the request which I don't think the unit tests currently cover.
 	// Setup.
 	var (
 		url    = "/api/3/contacts"
 		data   = map[string]interface{}{
-			"contact": contact,
+			"contact": struct {
+				EmailAddress   string    `json:"email"`
+				PhoneNumber    string    `json:"phone"`
+				FirstName      string    `json:"firstName"`
+				LastName       string    `json:"lastName"`
+				OrganizationID Int64json `json:"orgid"`
+			}{ EmailAddress: contact.EmailAddress, PhoneNumber: contact.PhoneNumber, FirstName: contact.FirstName, LastName: contact.LastName, OrganizationID: contact.OrganizationID },
 		}
 	)
 
@@ -118,7 +127,31 @@ func (c *Campaigner) ContactRead(id int64) (response ResponseContactRead, err er
 	case http.StatusNotFound:
 		return response, fmt.Errorf("contact read failed: ID %d not found", id)
 	default:
-		return response, fmt.Errorf("contact read failed: unspecified error: %s", string(body))
+		return response, fmt.Errorf("contact read failed: unspecified error (%d): %s", r.StatusCode, string(body))
+	}
+}
+
+func (c *Campaigner) ContactUpdate(id int64, request RequestContactUpdate) (response ResponseContactUpdate, err error) {
+	// Send PUT request.
+	u := fmt.Sprintf("/api/3/contact/sync")
+	d := map[string]interface{}{ "contact": request}
+	r, body, err := c.post(u, d)
+	if err != nil {
+		return response, fmt.Errorf("contact update failed, HTTP error: %s", err)
+	}
+
+	// Response check.
+	switch r.StatusCode {
+	case http.StatusOK:
+		log.Println("OK BODY FOOL")
+		log.Println(string(body))
+		err = json.Unmarshal(body, &response)
+		if err != nil {
+			return response, fmt.Errorf("contact update failed, JSON error: %s", err)
+		}
+		return response, nil
+	default:
+		return response, fmt.Errorf("contact update failed, unspecified error (%d): %s", r.StatusCode, string(body))
 	}
 }
 
@@ -283,9 +316,9 @@ func (c *Campaigner) ContactTagReadByContactID(id int64) (response ResponseConta
 // ContactTag holds a JSON compatible contact tag.
 type ContactTag struct {
 	DateCreated string          `json:"cdate"`
-	ContactID   int64json       `json:"contact"`
-	ID          int64json       `json:"id"`
-	TagID       int64json       `json:"tag"`
+	ContactID   Int64json       `json:"contact"`
+	ID          Int64json       `json:"id"`
+	TagID       Int64json       `json:"tag"`
 	Links       ContactTagLinks `json:"links"`
 }
 

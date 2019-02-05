@@ -49,7 +49,7 @@ func TestTagCreate_Success(t *testing.T) {
 
 	r, err := C.TagCreate(tag)
 
-	testContactTagID = int64json(r.Tag.ID)
+	testContactTagID = Int64json(r.Tag.ID)
 
 	assert.Nil(t, err)
 }
