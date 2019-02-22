@@ -148,19 +148,24 @@ type ResponseContactRead struct {
 		ID       string      `json:"id"`
 		NextTask interface{} `json:"nextTask"`
 	} `json:"deals"`
+	// TODO(json): Not sure if it's worth the time to try to merge the different types.  The FieldValue
+	//             returned by ContactRead, and FieldRead are different.
+	FieldValues []ContactFieldValue `json:"fieldValues"`
+	/*
 	FieldValues []struct {
-		Contact string      `json:"contact"`
-		Field   string      `json:"field"`
-		Value   interface{} `json:"value"`
-		Cdate   string      `json:"cdate"`
-		Udate   string      `json:"udate"`
-		Links   struct {
+		ID          int64       `json:"id"`
+		Contact     string      `json:"contact"`
+		Field       string      `json:"field"`
+		Value       interface{} `json:"value"`
+		DateCreated string      `json:"cdate"`
+		DateUpdated string      `json:"udate"`
+		Owner       string      `json:"owner"`
+		Links       struct {
 			Owner string `json:"owner"`
 			Field string `json:"field"`
 		} `json:"links"`
-		ID    string `json:"id"`
-		Owner string `json:"owner"`
 	} `json:"fieldValues"`
+	*/
 	// TODO(JSON): This field isn't being sent at all at the moment (null).
 	GeoAddresses []struct {
 		IP4      string        `json:"ip4"`

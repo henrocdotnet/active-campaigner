@@ -37,21 +37,20 @@ func (c *Campaigner) ContactList() (response ResponseContactList, err error) {
 }
 
 // ContactCreate creates a contact.
-//
 func (c *Campaigner) ContactCreate(contact Contact) (result ResponseContactCreate, err error) {
 	// TODO(api): The struct used in the request has to be rebuilt as AC does not like all of the extra fields in a "real contact".  This
 	//            might be caused by sending the organization ID in the request which I don't think the unit tests currently cover.
 	// Setup.
 	var (
-		url    = "/api/3/contacts"
-		data   = map[string]interface{}{
+		url  = "/api/3/contacts"
+		data = map[string]interface{}{
 			"contact": struct {
 				EmailAddress   string    `json:"email"`
 				PhoneNumber    string    `json:"phone"`
 				FirstName      string    `json:"firstName"`
 				LastName       string    `json:"lastName"`
 				OrganizationID Int64json `json:"orgid"`
-			}{ EmailAddress: contact.EmailAddress, PhoneNumber: contact.PhoneNumber, FirstName: contact.FirstName, LastName: contact.LastName, OrganizationID: contact.OrganizationID },
+			}{EmailAddress: contact.EmailAddress, PhoneNumber: contact.PhoneNumber, FirstName: contact.FirstName, LastName: contact.LastName, OrganizationID: contact.OrganizationID},
 		}
 	)
 
@@ -85,24 +84,6 @@ func (c *Campaigner) ContactCreate(contact Contact) (result ResponseContactCreat
 	}
 }
 
-// ContactDelete deletes a contact.
-func (c *Campaigner) ContactDelete(id int64) error {
-	// TODO(error-checking): Are there specific HTTP codes that can be checked for?
-	// Send DELETE request.
-	r, b, err := c.delete(fmt.Sprintf("/api/3/contacts/%d", id))
-	if err != nil {
-		return fmt.Errorf("contact deletion failed, HTTP error: %s", err)
-	}
-
-	// Response check.
-	switch r.StatusCode {
-	case http.StatusOK: // Success.
-		return nil
-	default:
-		return fmt.Errorf("could not delete contact: %s", b)
-	}
-}
-
 // ContactRead reads a contact.
 func (c *Campaigner) ContactRead(id int64) (response ResponseContactRead, err error) {
 	// TODO(response-parsing): Quite a bit of extra data is being returned besides the contact itself.  Not sure if this should be parsed and wrapped back into the main contact struct.
@@ -131,10 +112,11 @@ func (c *Campaigner) ContactRead(id int64) (response ResponseContactRead, err er
 	}
 }
 
+// ContactUpdate updates a contact.
 func (c *Campaigner) ContactUpdate(id int64, request RequestContactUpdate) (response ResponseContactUpdate, err error) {
 	// Send PUT request.
 	u := fmt.Sprintf("/api/3/contact/sync")
-	d := map[string]interface{}{ "contact": request}
+	d := map[string]interface{}{"contact": request}
 	r, body, err := c.post(u, d)
 	if err != nil {
 		return response, fmt.Errorf("contact update failed, HTTP error: %s", err)
@@ -153,6 +135,85 @@ func (c *Campaigner) ContactUpdate(id int64, request RequestContactUpdate) (resp
 	default:
 		return response, fmt.Errorf("contact update failed, unspecified error (%d): %s", r.StatusCode, string(body))
 	}
+}
+
+// ContactDelete deletes a contact.
+func (c *Campaigner) ContactDelete(id int64) error {
+	// TODO(error-checking): Are there specific HTTP codes that can be checked for?
+	// Send DELETE request.
+	r, b, err := c.delete(fmt.Sprintf("/api/3/contacts/%d", id))
+	if err != nil {
+		return fmt.Errorf("contact deletion failed, HTTP error: %s", err)
+	}
+
+	// Response check.
+	switch r.StatusCode {
+	case http.StatusOK: // Success.
+		return nil
+	default:
+		return fmt.Errorf("contact deletion failed, unspecified error: %s", string(b))
+	}
+}
+
+// ContactFieldDeleteByFieldValueID deletes a contact field value by it's ID.  Note that this is different from the Field::ID.
+func (c *Campaigner) ContactFieldDeleteByFieldValueID(id int64) (err error) {
+	u := fmt.Sprintf("/api/3/fieldValues/%d", id)
+	r, body, err := c.delete(u)
+	if err != nil {
+		return fmt.Errorf("contact field deletion failed, HTTP error: %s", err)
+	}
+
+	// Response check.
+	switch r.StatusCode {
+	case http.StatusOK:
+		var r interface{}
+		err = json.Unmarshal(body, &r)
+		if err != nil {
+			return fmt.Errorf("contact field deletion failed, JSON error: %s", err)
+		}
+
+		return nil
+	default:
+		return fmt.Errorf("contact field deletion failed, unspecified error (%d): %s", r.StatusCode, string(body))
+	}
+}
+
+// ContactFieldUpdate updates a custom field for a contact.
+func (c *Campaigner) ContactFieldUpdate(contactID int64, fieldID int64, value string) (response ResponseContactFieldUpdate, err error) {
+	// Check that both the contact and field exist.
+	_, err = c.ContactRead(contactID)
+	if err != nil {
+		return response, fmt.Errorf("contact field update failed, could not find contact: %s", err)
+	}
+	_, err = c.FieldRead(fieldID)
+	if err != nil {
+		return response, fmt.Errorf("contact field update failed, could not find field: %s", err)
+	}
+
+	// Send POST request.
+	req := RequestContactFieldUpdate{ContactID: contactID, FieldID: fieldID, Value: value}
+	u := "/api/3/fieldValues"
+	r, body, err := c.post(u, map[string]interface{}{"fieldValue": req})
+	if err != nil {
+		return response, fmt.Errorf("contact field update failed, HTTP error: %s", err)
+	}
+
+	// Response check.
+	switch r.StatusCode {
+	case http.StatusCreated: // Create.
+		fallthrough
+	case http.StatusOK: // Update.
+		err = json.Unmarshal(body, &response)
+		if err != nil {
+			return response, fmt.Errorf("contact field update failed, JSON error: %s", err)
+		}
+		//dump(response)
+		//logFormattedJSON("response", response)
+
+		return response, nil
+	}
+
+	return response, fmt.Errorf("contact field update failed, unspecified error (%d): %s", r.StatusCode, string(body))
 }
 
 // ContactTagCreate links a tag to a contact.
@@ -179,13 +240,13 @@ func (c *Campaigner) ContactTagCreate(request RequestContactTagCreate) (response
 	}
 
 	// Check that contact exists.
-	_, err = c.ContactRead(request.ContactID)
+	rC, err := c.ContactRead(request.ContactID)
 	if err != nil {
 		return response, fmt.Errorf("contact tagging failed, could not find contact: %s", err)
 	}
 
 	// Check that tag exists.
-	_, err = c.TagRead(request.TagID)
+	rT, err := c.TagRead(request.TagID)
 	if err != nil {
 		return response, fmt.Errorf("contact tagging failed, could not find tag: %s", err)
 	}
@@ -198,69 +259,28 @@ func (c *Campaigner) ContactTagCreate(request RequestContactTagCreate) (response
 
 	// Response check.
 	// TODO(API): I am getting both 200 and 201 on this step.  It looks like 201 is returned for a brand new association and 200 if it already exists.
+	// Association already exists.  Response JSON does not include the contacts:[] bit.
+	// Brand new association.  Response JSON includes the contact, bleh.
 	switch r.StatusCode {
-	case http.StatusOK: // Association already exists.  Response JSON does not include the contacts:[] bit.
-		err := json.Unmarshal(b, &response)
-		if err != nil {
+		case http.StatusOK, http.StatusCreated:
+		if err := json.Unmarshal(b, &response); err != nil {
 			return response, fmt.Errorf("contact tagging failed, JSON error: %s", err)
 		}
-	case http.StatusCreated: // Brand new association.  Response JSON includes the contact, bleh.
-		err := json.Unmarshal(b, &response)
-		if err != nil {
-			return response, fmt.Errorf("contact tagging failed, JSON error: %s", err)
-		}
+
+		response.Custom.ContactEmail = rC.Contact.EmailAddress
+		response.Custom.TagName = rT.Tag.Name
+
+		return response, nil
 	default:
 		return response, fmt.Errorf("contact tagging failed, unspecified error (%d): %s", r.StatusCode, string(b))
 	}
-
-	return response, nil
-
-}
-
-func (c *Campaigner) ContactFieldUpdate(contactID int64, fieldID int64, value string) (response interface{}, err error) {
-	// Setup.
-	u := "/api/3/fieldValues"
-
-	// Check that the contact exists.
-	_, err = c.ContactRead(contactID)
-	if err != nil {
-		return response, fmt.Errorf("contact field update failed, could not find contact: %s", err)
-	}
-
-	// Check that the field exists.
-	_, err = c.FieldRead(fieldID)
-	if err != nil {
-		return response, fmt.Errorf("contact field update failed, could not find field: %s", err)
-	}
-
-	// Send POST request.
-	req := RequestContactFieldUpdate{ContactID: contactID, FieldID: fieldID, Value: value}
-	data := map[string]interface{}{ "fieldValue": req}
-	r, body, err := c.post(u, data)
-	if err != nil {
-		return response, fmt.Errorf("contact field update failed, HTTP error: %s", err)
-	}
-
-	// Response check.
-	switch r.StatusCode {
-	case http.StatusOK:
-		err = json.Unmarshal(body, &response)
-		if err != nil {
-			return response, fmt.Errorf("contact field update failed, JSON error: %s", err)
-		}
-
-		return response, nil
-	}
-
-
-	return response, fmt.Errorf("contact field update failed, unspecified error (%d): %s", r.StatusCode, string(body))
 }
 
 // ContactTagDelete removes a tag from a contact.  This removes the "link" and not the tag itself.
 func (c *Campaigner) ContactTagDelete(id int64) error {
 	// Setup.
 	var (
-		url  = fmt.Sprintf("/api/3/contactTags/%d", id)
+		url = fmt.Sprintf("/api/3/contactTags/%d", id)
 	)
 
 	// Send DELETE request.
@@ -278,14 +298,14 @@ func (c *Campaigner) ContactTagDelete(id int64) error {
 		e.Message = fmt.Sprintf("contact tag deletion failed, ID `%d` not found", id)
 		return e
 	default:
-		return fmt.Errorf("contact tag deletion failed, unspecified error: %s", b)
+		return fmt.Errorf("contact tag deletion failed, unspecified error: %s", string(b))
 	}
 }
 
 // ContactTagReadByContactID reads assigned tags for a contact by it's ID.
 func (c *Campaigner) ContactTagReadByContactID(id int64) (response ResponseContactTagRead, err error) {
 	// Setup.
-	var url  = fmt.Sprintf("/api/3/contacts/%d/contactTags", id)
+	var url = fmt.Sprintf("/api/3/contacts/%d/contactTags", id)
 
 	// Send GET request.
 	r, body, err := c.get(url)
@@ -313,6 +333,12 @@ func (c *Campaigner) ContactTagReadByContactID(id int64) (response ResponseConta
 	}
 }
 
+// ResponseContactFieldUpdate holds a JSON compatible response for updating contact fields.
+type ResponseContactFieldUpdate struct {
+	Contacts   []Contact         `json:"contacts"`
+	FieldValue ContactFieldValue `json:"fieldValue"`
+}
+
 // ContactTag holds a JSON compatible contact tag.
 type ContactTag struct {
 	DateCreated string          `json:"cdate"`
@@ -331,6 +357,10 @@ type ContactTagLinks struct {
 
 // ResponseContactTagCreate holds a JSON compatible response for creating contacts.
 type ResponseContactTagCreate struct {
+	Custom struct {
+		ContactEmail string
+		TagName      string
+	}
 	ContactTag ContactTag `json:"contactTag"`
 }
 

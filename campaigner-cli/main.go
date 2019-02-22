@@ -15,10 +15,10 @@ import (
 )
 
 var (
-	config EnvConfig
+	config envConfig
 )
 
-type EnvConfig struct {
+type envConfig struct {
 	APIToken string `envconfig:"api_token"`
 	BaseURL  string `envconfig:"base_url"`
 }
@@ -114,12 +114,45 @@ func main() {
 				os.Exit(-1)
 			}
 
-			for _, y := range(r.Fields) {
+			for _, y := range r.Fields {
 				fmt.Printf("\tID: %d, Title: %s\n", y.ID, y.Title)
 			}
 		}
+	case "list":
+		switch args[2] {
+		case "list":
+			r, err := c.ListList()
+			if err != nil {
+				handleError(err)
+
+			}
+
+			for _, y := range r.Lists {
+				fmt.Printf("\tID: %d: Name: %s\n", y.ID, y.Name)
+			}
+		case "read":
+			id, err := strconv.ParseInt(args[3], 10, 64)
+			if err != nil {
+				handleError(err)
+			}
+
+			r, err := c.ListRead(id)
+			if err != nil {
+				handleError(err)
+			}
+
+			fmt.Printf("% #v\n", pretty.Formatter(r))
+		}
 	case "org":
 		switch args[2] {
+		case "read":
+			id, err := strconv.ParseInt(args[3], 10, 64)
+			handleError(err)
+
+			r, err := c.OrganizationRead(id)
+			handleError(err)
+
+			fmt.Printf("% #v\n", pretty.Formatter(r))
 		case "delete":
 			id, err := strconv.Atoi(args[3])
 			if err != nil {
@@ -133,8 +166,6 @@ func main() {
 				os.Exit(-1)
 			}
 			fmt.Printf("Organization %d deleted successfully.\n", id)
-
-			break
 		case "list":
 			r, err := c.OrganizationList()
 			if err != nil {
@@ -147,6 +178,8 @@ func main() {
 				fmt.Printf("\t%d: %s (%s)\n", y.ID, y.Name, y.ContactCount)
 			}
 			fmt.Print("\n")
+		default:
+			printUsage()
 		}
 	case "tag":
 		switch args[2] {
@@ -216,6 +249,28 @@ func main() {
 				fmt.Println(err)
 				os.Exit(-1)
 			}
+
+			lists, err := c.ListList()
+			if err != nil {
+				handleError(err)
+			}
+			t3 := template.Must(template.New("template").Funcs(fMap).Parse(listsTemplate))
+			err = t3.Execute(os.Stdout, lists)
+			if err != nil {
+				handleError(err)
+			}
+
+		case "read":
+			id, err := strconv.ParseInt(args[3], 10, 64)
+			if err != nil {
+				handleError(err)
+			}
+			r, err := c.TagRead(id)
+			if err != nil {
+				handleError(err)
+			}
+
+			fmt.Printf("Tag: %# v\n", pretty.Formatter(r))
 		}
 
 	default:
@@ -243,4 +298,11 @@ Usage:
 `
 
 	fmt.Printf(tmpl)
+}
+
+func handleError(e error) {
+	if e != nil {
+		fmt.Println(e)
+		os.Exit(-1)
+	}
 }

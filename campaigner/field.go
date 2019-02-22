@@ -3,11 +3,12 @@ package campaigner
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 )
 
+// Field holds a JSON compatible custom contact field as it exists in the API.
 type Field struct {
+	ID           int64         `json:"id,string"`
 	Title        string        `json:"title"`
 	Description  string        `json:"descript"`
 	Type         string        `json:"type"`
@@ -28,9 +29,9 @@ type Field struct {
 		Options   string `json:"options"`
 		Relations string `json:"relations"`
 	} `json:"links"`
-	ID int64 `json:"id,string"`
 }
 
+// ResponseFieldList holds a JSON compatible response for listing custom fields.
 type ResponseFieldList struct {
 	FieldOptions       []interface{}                `json:"fieldOptions"`
 	FieldRelationships []ResponseFieldRelationships `json:"fieldRels"`
@@ -40,12 +41,14 @@ type ResponseFieldList struct {
 	} `json:"meta"`
 }
 
+// ResponseFieldRead holds a JSON compatible response for reading custom fields.
 type ResponseFieldRead struct {
 	FieldOptions       []interface{}                `json:"fieldOptions"`
 	FieldRelationships []ResponseFieldRelationships `json:"fieldRels"`
 	Field              Field                        `json:"field"`
 }
 
+// ResponseFieldRelationships holds a JSON compatible response for reading field relationships.
 type ResponseFieldRelationships struct {
 	Field        string        `json:"field"`
 	RelationID   string        `json:"relid"`
@@ -69,7 +72,6 @@ func (c *Campaigner) FieldList() (response ResponseFieldList, err error) {
 	// Response check.
 	switch r.StatusCode {
 	case http.StatusOK:
-		log.Println(string(body))
 		err := json.Unmarshal(body, &response)
 		if err != nil {
 			return response, fmt.Errorf("field list failed, JSON error: %s", err)
@@ -87,7 +89,6 @@ func (c *Campaigner) FieldList() (response ResponseFieldList, err error) {
 func (c *Campaigner) FieldRead(id int64) (response ResponseFieldRead, err error) {
 	// Setup.
 	u := fmt.Sprintf("/api/3/fields/%d", id)
-	log.Println(u)
 
 	// Send GET request.
 	r, body, err := c.get(u)

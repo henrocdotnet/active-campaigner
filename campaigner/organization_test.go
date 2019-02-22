@@ -58,7 +58,7 @@ func TestOrganizationDelete_FailureNotFound(t *testing.T) {
 	err := c.OrganizationDelete(invalidID)
 
 	assert.NotNil(t, err) // Should get an error back.
-	assert.IsType(t, new(CustomErrorNotFound), err, err.Error())
+	assert.IsType(t, new(CustomErrorNotFound), err, err)
 }
 
 func TestOrganizationDelete_Success(t *testing.T) {

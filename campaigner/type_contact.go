@@ -44,6 +44,21 @@ type Contact struct {
 	Organization        interface{}   `json:"organization"`
 }
 
+// ContactFieldValue holds a JSON compatible contact field value as it exists in the API.
+type ContactFieldValue struct {
+	ID          Int64json `json:"id"`
+	ContactID   Int64json `json:"contact"`
+	FieldID     Int64json `json:"field"`
+	OwnerID     Int64json `json:"owner"`
+	Value       string    `json:"value"`
+	DateCreated string    `json:"cdate"`
+	DateUpdated string    `json:"udate"`
+	Links       struct {
+		Owner Int64json `json:"owner"`
+		Field Int64json `json:"field"`
+	} `json:"links"`
+}
+
 // ContactLinks holds a JSON compatible collection of links (nested structure, see Contact).  Not sure what these link to at this point (other than the obvious).
 type ContactLinks struct {
 	BounceLogs         string `json:"bounceLogs"`

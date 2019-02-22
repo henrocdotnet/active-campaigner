@@ -34,3 +34,20 @@ class ActiveCampaignerFieldConstants
 
 }
 `
+
+const listsTemplate = `
+<?php
+
+
+class ActiveCampaignerListConstants
+{
+
+{{- range $x, $y := .Lists }}
+
+    // {{ $y.Name }}
+    const {{ $y.Name | cleanTagName }} = {{ $y.ID }};
+
+{{- end }}
+
+}
+`

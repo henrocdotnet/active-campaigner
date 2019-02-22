@@ -10,13 +10,15 @@ import (
 	"strconv"
 )
 
-// Fixes issues caused by some ID numbers being returned as both strings and numbers in the JSON (from the same API calls).
+// Int64json fixes issues caused by some ID numbers being returned as both strings and numbers in the JSON (from the same API calls).
 type Int64json int64
 
+// MarshalJSON returns a JSON encoded int64.
 func (i Int64json) MarshalJSON() ([]byte, error) {
 	return json.Marshal(int64(i))
 }
 
+// UnmarshalJSON loads an Int64json.
 func (i *Int64json) UnmarshalJSON(data []byte) error {
 	re := regexp.MustCompile("[^0-9]")
 	s := re.ReplaceAllString(string(data), "")
@@ -30,15 +32,21 @@ func (i *Int64json) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// Int64 casts itself as an int64.
+func (i Int64json) Int64() int64 {
+	return int64(i)
+}
+
 func dump(i interface{}) {
 	log.Printf("%# v", pretty.Formatter(i))
 }
 
+//noinspection GoUnusedFunction
 func dumpWithMessage(i interface{}, m string) {
 	log.Printf("%s\n%# v", m, pretty.Formatter(i))
 }
 
-
+//noinspection GoUnusedFunction
 func logFormattedJSON(message string, data interface{}) {
 	tmp, err := json.MarshalIndent(data, "", "\t")
 	if err != nil {
@@ -51,6 +59,7 @@ func logFormattedJSON(message string, data interface{}) {
 	log.Printf("\n%s", string(tmp))
 }
 
+//noinspection GoUnusedFunction
 func writeIndentedJSON(path string, data []byte) {
 	var o bytes.Buffer
 

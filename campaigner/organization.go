@@ -3,7 +3,6 @@ package campaigner
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	url2 "net/url"
 	"strings"
@@ -52,34 +51,31 @@ func (c *Campaigner) OrganizationCreate(org Organization) (ResponseOrganizationC
 		result ResponseOrganizationCreate
 	)
 
-	r, b, err := c.post(url, data)
+	r, body, err := c.post(url, data)
 	if err != nil {
-		return result, fmt.Errorf("could not creation organization, HTTP failure: %s", err)
+		return result, fmt.Errorf("organization creation failed, HTTP error: %s", err)
 	}
 
-	if r.StatusCode == http.StatusCreated {
-		err = json.Unmarshal(b, &result)
+	// Response check.
+	switch r.StatusCode {
+	case http.StatusCreated:
+		err = json.Unmarshal(body, &result)
 		if err != nil {
-			return result, fmt.Errorf("could not create organization, JSON failure: %s", err)
+			return result, fmt.Errorf("organization creation failed, JSON error: %s", err)
 		}
 
 		return result, nil
-	}
-
-	if r.StatusCode == http.StatusUnprocessableEntity {
+	case http.StatusUnprocessableEntity:
 		var apiError ActiveCampaignError
-		err = json.Unmarshal(b, &apiError)
+		err = json.Unmarshal(body, &apiError)
 		if err != nil {
-			return result, fmt.Errorf("could not unmarshal API error json: %s", err)
+			return result, fmt.Errorf("organization creation failed, API error unmarshall error: %s", err)
 		}
 
 		return result, apiError
+	default:
+		return result, fmt.Errorf("organization creation failed, unspecified error (%d): %s", r.StatusCode, string(body))
 	}
-
-	log.Printf("response: %#v\n", r)
-	log.Printf("body: %s\n", string(b))
-
-	return result, nil
 }
 
 // OrganizationDelete deletes an organization by it's ID.
@@ -106,7 +102,7 @@ func (c *Campaigner) OrganizationDelete(id int64) error {
 	case http.StatusOK:
 		return nil
 	default:
-		return fmt.Errorf("organization delete failed, unspecified error (%d): %s", r.StatusCode, b)
+		return fmt.Errorf("organization delete failed, unspecified error (%d): %s", r.StatusCode, string(b))
 	}
 }
 

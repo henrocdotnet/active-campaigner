@@ -38,11 +38,11 @@ func (c *Campaigner) GenerateURL(url string) string {
 	return url
 }
 
-func (c *Campaigner) delete(url string) (gorequest.Response, string, error) {
+func (c *Campaigner) delete(url string) (gorequest.Response, []byte, error) {
 	// Locals.
 	var (
 		r    gorequest.Response
-		b    string
+		b    []byte
 		errs []error
 	)
 
@@ -54,7 +54,7 @@ func (c *Campaigner) delete(url string) (gorequest.Response, string, error) {
 	r, b, errs = gorequest.New().
 		Delete(c.GenerateURL(url)).
 		Set("Api-Token", c.APIToken).
-		End()
+		EndBytes()
 
 	if errs != nil {
 		return r, b, CustomError{Message: "could not perform HTTP DELETE request", HTTPErrors: errs}

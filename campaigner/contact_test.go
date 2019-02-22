@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"log"
 	"testing"
 	"time"
 )
@@ -126,12 +127,39 @@ func TestContactUpdate_Success(t *testing.T) {
 }
 
 
+func TestContactFieldDeleteByFieldValueID_Success(t *testing.T) {
+	c, err := C.ContactRead(testContactID)
+	require.Nil(t, err)
+
+	for _, v := range c.FieldValues {
+		log.Printf("%d: %s (%d)", v.ID, v.Value, v.FieldID)
+		err := C.ContactFieldDeleteByFieldValueID(v.ID.Int64())
+		assert.Nil(t, err)
+	}
+}
+
 func TestContactFieldUpdate_Success(t *testing.T) {
 	now := time.Now()
-	v := fmt.Sprintf("test value %s_%s", now.Format("20060102"), now.Format("220841.000"))
+	v := fmt.Sprintf("test value %s_%s", now.Format("20060102"), now.Format("150405.000"))
 
-	_, err := C.ContactFieldUpdate(testContactID, 2, v)
-	assert.Nil(t, err)
+	// Update field.
+	update, err := C.ContactFieldUpdate(testContactID, 2, v)
+	require.Nil(t, err)
+	assert.Equal(t, v, update.FieldValue.Value)
+
+	// Check that field is updated on a fresh read.
+	contact, err := C.ContactRead(testContactID)
+	require.Nil(t, err)
+	var found = false
+	for _, value := range contact.FieldValues {
+		if value.ID == update.FieldValue.ID {
+			found = true
+			assert.Equal(t, value.Value, value.Value)
+			log.Println(value.Value)
+		}
+	}
+	assert.True(t, found)
+
 }
 
 // NOTE(api): Their docs say a 404 or 422 can be returned as errors but all I've gotten so far are 200, 201, and 500.
@@ -164,7 +192,7 @@ func TestContactTagDelete_FailureNotFound(t *testing.T) {
 	id := int64(0)
 	err := C.ContactTagDelete(id)
 	assert.NotNil(t, err)
-	assert.IsType(t, new(CustomErrorNotFound), err, err.Error())
+	assert.IsType(t, new(CustomErrorNotFound), err, err)
 }
 
 // TODO(unit-test): Need to feed a known existing tag-relationship ID here.

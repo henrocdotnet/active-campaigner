@@ -1,5 +1,6 @@
 package campaigner
 
+// RequestContactUpdate holds a JSOn compatible request for updating contacts.
 type RequestContactUpdate struct {
 	ID             int64  `json:"id,omitempty"`
 	EmailAddress   string `json:"email,omitempty"`
