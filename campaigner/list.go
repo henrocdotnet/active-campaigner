@@ -25,9 +25,9 @@ func (c *Campaigner) ListContactAdd(listID int64, contactID int64) (response Res
 
 	// Response check.
 	switch r.StatusCode {
-	case http.StatusOK:
+	case http.StatusOK, http.StatusCreated:
 		if err = json.Unmarshal(body, &response); err != nil {
-			return response, fmt.Errorf("list contact addition failed, JSON error: %s", err)
+			return response, fmt.Errorf("list contact addition failed, JSON error: %s (%s)", err, string(body))
 		}
 
 		response.Custom.ListName = l.List.Name
@@ -46,7 +46,7 @@ func (c *Campaigner) ListList() (response ResponseListList, err error) {
 
 	// Response check.
 	switch r.StatusCode {
-	case http.StatusOK, http.StatusCreated:
+	case http.StatusOK:
 		if err = json.Unmarshal(body, &response); err != nil {
 			return response, fmt.Errorf("list listing failed, JSON error: %s", err)
 		}
@@ -144,7 +144,7 @@ type ResponseListContactAdd struct {
 		Automation  interface{} `json:"automation"`
 		AutoSyncLog interface{} `json:"autosyncLog"`
 		Campaign    interface{} `json:"campaign"`
-		Contact     string      `json:"contact"`
+		ContactID   Int64json   `json:"contact"`
 		FirstName   string      `json:"first_name"`
 		Form        interface{} `json:"form"`
 		ID          string      `json:"id"`
@@ -162,12 +162,12 @@ type ResponseListContactAdd struct {
 			Message               string `json:"message"`
 			UnsubscribeAutomation string `json:"unsubscribeAutomation"`
 		} `json:"links"`
-		List                  string      `json:"list"`
+		ListID                Int64json   `json:"list"`
 		Message               interface{} `json:"message"`
 		Responder             string      `json:"responder"`
 		DateSubscribed        string      `json:"sdate"`
-		SeriesID              string      `json:"seriesid"`
-		SourceID              string      `json:"sourceid"`
+		SeriesID              Int64json   `json:"seriesid"`
+		SourceID              Int64json   `json:"sourceid"`
 		Status                int         `json:"status"`
 		Sync                  string      `json:"sync"`
 		UnsubscribeReason     string      `json:"unsubreason"`
