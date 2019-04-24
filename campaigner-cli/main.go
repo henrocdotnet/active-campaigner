@@ -37,7 +37,6 @@ func main() {
 
 	c := campaigner.Campaigner{APIToken: config.APIToken, BaseURL: config.BaseURL}
 
-	// log.Printf("%#v\n", args)
 	if len(args) < 3 {
 		printUsage()
 		os.Exit(-1)
@@ -65,7 +64,32 @@ func main() {
 			}
 
 		case "list":
-			r, err := c.ContactList()
+			var (
+				limit = campaigner.DEFAULT_LIST_LIMIT
+				offset = campaigner.DEFAULT_LIST_OFFSET
+				err error
+			)
+
+			if len(args) == 5 {
+				limit, err = strconv.Atoi(args[3])
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(-1)
+				}
+
+				offset, err = strconv.Atoi(args[4])
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(-1)
+				}
+			}
+
+			if len(args) != 3 && len(args) != 5 {
+				printUsage()
+				os.Exit(-1)
+			}
+
+			r, err := c.ContactList(limit, offset)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(-1)
@@ -75,6 +99,8 @@ func main() {
 			for _, y := range r.Contacts {
 				fmt.Printf("\t%d: %s\n", y.ID, y.EmailAddress)
 			}
+			fmt.Println("")
+			fmt.Printf("Limit: %d, Offset: %d, Total: %d\n", limit, offset, r.Meta.Total)
 			fmt.Println("")
 
 		case "read":
@@ -167,7 +193,32 @@ func main() {
 			}
 			fmt.Printf("Organization %d deleted successfully.\n", id)
 		case "list":
-			r, err := c.OrganizationList()
+			var (
+				limit = campaigner.DEFAULT_LIST_LIMIT
+				offset = campaigner.DEFAULT_LIST_OFFSET
+				err error
+			)
+
+			if len(args) == 5 {
+				limit, err = strconv.Atoi(args[3])
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(-1)
+				}
+
+				offset, err = strconv.Atoi(args[4])
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(-1)
+				}
+			}
+
+			if len(args) != 3 && len(args) != 5 {
+				printUsage()
+				os.Exit(-1)
+			}
+
+			r, err := c.OrganizationList(limit, offset)
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(-1)
@@ -177,7 +228,8 @@ func main() {
 			for _, y := range r.Organizations {
 				fmt.Printf("\t%d: %s (%s)\n", y.ID, y.Name, y.ContactCount)
 			}
-			fmt.Print("\n")
+			fmt.Println("")
+			fmt.Printf("Limit: %d, Offset: %d, Total: %d\n\n", limit, offset, r.Meta.Total)
 		default:
 			printUsage()
 		}

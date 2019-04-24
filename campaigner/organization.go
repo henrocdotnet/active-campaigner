@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	url2 "net/url"
+	"strconv"
 	"strings"
 )
 
@@ -36,7 +37,7 @@ type ResponseOrganizationRead struct {
 type ResponseOrganizationList struct {
 	Organizations []Organization `json:"organizations"`
 	Meta          struct {
-		Total int64 `json:"total,string"`
+		Total int `json:"total,string"`
 	} `json:"meta"`
 }
 
@@ -144,15 +145,15 @@ func (c *Campaigner) OrganizationFind(n string) (ResponseOrganizationList, error
 }
 
 // OrganizationList lists all organizations.
-func (c *Campaigner) OrganizationList() (ResponseOrganizationList, error) {
+func (c *Campaigner) OrganizationList(limit int, offset int) (response ResponseOrganizationList, err error) {
 	// Setup.
-	var (
-		url      = "/api/3/organizations"
-		response ResponseOrganizationList
-	)
+	qs := url2.Values{}
+	qs.Set("limit", strconv.Itoa(limit))
+	qs.Set("offset", strconv.Itoa(offset))
+	u := url2.URL{ Path: "/api/3/organizations", RawQuery: qs.Encode() }
 
 	// GET request.
-	r, body, err := c.get(url)
+	r, body, err := c.get(u.String())
 	if err != nil {
 		return response, fmt.Errorf("organization list failed, HTTP failure: %s", err)
 	}

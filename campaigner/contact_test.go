@@ -43,7 +43,7 @@ func TestContactTaggingSuite(t *testing.T) {
 
 func TestContactList(t *testing.T) {
 	// TODO(unit-test): Should check the internals of the ResponseContactList value.
-	_, err := C.ContactList()
+	_, err := C.ContactList(DEFAULT_LIST_LIMIT, DEFAULT_LIST_OFFSET)
 	assert.Nil(t, err)
 }
 

@@ -10,7 +10,7 @@ type ResponseContactList struct {
 	ScoreValues []interface{} `json:"scoreValues"`
 	Contacts    []Contact     `json:"contacts"`
 	Meta        struct {
-		Total     string `json:"total"`
+		Total     int    `json:"total,string"`
 		PageInput struct {
 			Segmentid  int         `json:"segmentid"`
 			Formid     int         `json:"formid"`

@@ -10,6 +10,9 @@ import (
 	"strconv"
 )
 
+const DEFAULT_LIST_LIMIT = 20
+const DEFAULT_LIST_OFFSET = 0
+
 // Int64json fixes issues caused by some ID numbers being returned as both strings and numbers in the JSON (from the same API calls).
 type Int64json int64
 
@@ -35,6 +38,11 @@ func (i *Int64json) UnmarshalJSON(data []byte) error {
 // Int64 casts itself as an int64.
 func (i Int64json) Int64() int64 {
 	return int64(i)
+}
+
+type LimitOffset struct {
+	Limit int
+	Offset int
 }
 
 func dump(i interface{}) {

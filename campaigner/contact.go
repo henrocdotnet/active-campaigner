@@ -5,18 +5,25 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
+	"strconv"
 )
 
 // ContactList lists contacts.
-//
-// TODO(api): Is there support for searching/filtering?
-func (c *Campaigner) ContactList() (response ResponseContactList, err error) {
-	// TODO(API): Need to add return type here (and return it).
+func (c *Campaigner) ContactList(limit int, offset int) (response ResponseContactList, err error) {
 	// Setup.
-	url := "/api/3/contacts"
+	qs := url.Values{}
+	qs.Set("limit", strconv.Itoa(limit))
+	qs.Set("offset", strconv.Itoa(offset))
+	u := url.URL{ Path: "/api/3/contacts", RawQuery: qs.Encode() }
+
+	fmt.Printf("contact list: url = %s\n", u.String())
+
+	//qs := fmt.Sprintf("%s=%s", url2.Query)
+	//url := "/api/3/contacts"
 
 	// Send GET request.
-	r, body, err := c.get(url)
+	r, body, err := c.get(u.String())
 	if err != nil {
 		return response, fmt.Errorf("contact list failed, HTTP error: %s", err)
 	}
@@ -42,7 +49,7 @@ func (c *Campaigner) ContactCreate(contact Contact) (result ResponseContactCreat
 	//            might be caused by sending the organization ID in the request which I don't think the unit tests currently cover.
 	// Setup.
 	var (
-		url  = "/api/3/contacts"
+		uri  = "/api/3/contacts"
 		data = map[string]interface{}{
 			"contact": struct {
 				EmailAddress   string    `json:"email"`
@@ -55,7 +62,7 @@ func (c *Campaigner) ContactCreate(contact Contact) (result ResponseContactCreat
 	)
 
 	// Send POST request.
-	r, body, err := c.post(url, data)
+	r, body, err := c.post(uri, data)
 	if err != nil {
 		return result, fmt.Errorf("contact creation failed, HTTP error: %s", err)
 	}
@@ -88,10 +95,10 @@ func (c *Campaigner) ContactCreate(contact Contact) (result ResponseContactCreat
 func (c *Campaigner) ContactRead(id int64) (response ResponseContactRead, err error) {
 	// TODO(response-parsing): Quite a bit of extra data is being returned besides the contact itself.  Not sure if this should be parsed and wrapped back into the main contact struct.
 	// Setup.
-	var url = fmt.Sprintf("/api/3/contacts/%d", id)
+	var uri = fmt.Sprintf("/api/3/contacts/%d", id)
 
 	// Send GET request.
-	r, body, err := c.get(url)
+	r, body, err := c.get(uri)
 	if err != nil {
 		return response, err
 	}
@@ -226,7 +233,7 @@ func (c *Campaigner) ContactTagCreate(request RequestContactTagCreate) (response
 	// TODO(error-checking): Nonexistent contact or tag should return a CustomErrorNotFound error.
 	// Setup.
 	var (
-		url  = "/api/3/contactTags"
+		uri  = "/api/3/contactTags"
 		data = map[string]interface{}{
 			"contactTag": request,
 		}
@@ -252,7 +259,7 @@ func (c *Campaigner) ContactTagCreate(request RequestContactTagCreate) (response
 	}
 
 	// Send POST request.
-	r, b, err := c.post(url, data)
+	r, b, err := c.post(uri, data)
 	if err != nil {
 		return response, fmt.Errorf("contact tagging failed, HTTP error: %s", err)
 	}
@@ -280,11 +287,11 @@ func (c *Campaigner) ContactTagCreate(request RequestContactTagCreate) (response
 func (c *Campaigner) ContactTagDelete(id int64) error {
 	// Setup.
 	var (
-		url = fmt.Sprintf("/api/3/contactTags/%d", id)
+		uri = fmt.Sprintf("/api/3/contactTags/%d", id)
 	)
 
 	// Send DELETE request.
-	r, b, err := c.delete(url)
+	r, b, err := c.delete(uri)
 	if err != nil {
 		return fmt.Errorf("contact tag deletion failed, HTTP failure: %s", err)
 	}
@@ -305,10 +312,10 @@ func (c *Campaigner) ContactTagDelete(id int64) error {
 // ContactTagReadByContactID reads assigned tags for a contact by it's ID.
 func (c *Campaigner) ContactTagReadByContactID(id int64) (response ResponseContactTagRead, err error) {
 	// Setup.
-	var url = fmt.Sprintf("/api/3/contacts/%d/contactTags", id)
+	var uri = fmt.Sprintf("/api/3/contacts/%d/contactTags", id)
 
 	// Send GET request.
-	r, body, err := c.get(url)
+	r, body, err := c.get(uri)
 	if err != nil {
 		return response, fmt.Errorf("contact tags read failed, HTTP error: %s", err)
 	}
