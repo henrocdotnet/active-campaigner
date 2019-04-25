@@ -117,6 +117,24 @@ func main() {
 			}
 			fmt.Printf("% #v\n", pretty.Formatter(r))
 
+			fields, err := c.FieldList()
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(-1)
+			}
+			for _, fieldValue := range r.FieldValues {
+				var n string
+				for _, b := range fields.Fields {
+					//log.Printf("%d %d %s\n", b.ID, fieldValue.FieldID.Int64(), b.Title)
+					if b.ID == fieldValue.FieldID.Int64() {
+						n = b.Title
+					}
+
+				}
+				fmt.Printf("Field: %d %s %s\n", fieldValue.FieldID, n, fieldValue.Value)
+
+			}
+
 		case "tags":
 			id, err := strconv.ParseInt(args[3], 10, 64)
 			if err != nil {

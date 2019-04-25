@@ -113,7 +113,9 @@ func TestOrganizationFind_Success(t *testing.T) {
 func TestOrganizationList_Success(t *testing.T) {
 	c := Campaigner{APIToken: config.APIToken, BaseURL: config.BaseURL}
 
-	_, err := c.OrganizationList()
+	offset := 0
+	limit :=  20
+	_, err := c.OrganizationList(limit, offset)
 
 	assert.Nil(t, err)
 }
@@ -131,4 +133,20 @@ func TestOrganizationRead_Success(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, testOrganizationID, r.Organization.ID)
 	assert.NotEmpty(t, r.Organization.Name)
+}
+
+func TestOrganizationUpdate_Failure(t *testing.T) {
+	badID := int64(-1)
+	request := RequestOrganizationUpdate{ Name: "" }
+
+	_, err := C.OrganizationUpdate(badID, request)
+	assert.NotNil(t, err)
+}
+
+func TestOrganizationUpdate_Success(t *testing.T) {
+	id := int64(63)
+	request := RequestOrganizationUpdate{ Name: "Org " + NOW }
+
+	_, err := C.OrganizationUpdate(id, request)
+	assert.Nil(t, err)
 }

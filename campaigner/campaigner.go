@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/parnurzeal/gorequest"
@@ -98,14 +97,7 @@ func (c *Campaigner) get(url string) (gorequest.Response, []byte, error) {
 }
 
 // Send a POST request to the Active Campaign API.
-func (c *Campaigner) post(url string, i interface{}) (gorequest.Response, []byte, error) {
-	// Locals.
-	var (
-		r    gorequest.Response
-		b    []byte
-		errs []error
-	)
-
+func (c *Campaigner) post(url string, i interface{}) (r gorequest.Response, b []byte, err error) {
 	// Check API config.
 	if err := c.CheckConfig(); err != nil {
 		return r, b, err
@@ -115,13 +107,11 @@ func (c *Campaigner) post(url string, i interface{}) (gorequest.Response, []byte
 	url = c.GenerateURL(url)
 	j, err := json.Marshal(i)
 	if err != nil {
-		log.Fatalf("Could not marshal json for interface: %s\n", err)
+		return r, b, fmt.Errorf("Could not marshall json for interface: %s\n", err)
 	}
-	// log.Println("Data Payload:")
-	// log.Println(string(j))
 
 	// Send POST request.
-	r, b, errs = gorequest.New().
+	r, b, errs := gorequest.New().
 		Post(url).
 		Send(string(j)).
 		Set("Api-Token", c.APIToken).
@@ -135,14 +125,8 @@ func (c *Campaigner) post(url string, i interface{}) (gorequest.Response, []byte
 	return r, b, nil
 }
 
-func (c *Campaigner) put(url string, i interface{}) (gorequest.Response, string, error) {
-	// Locals.
-	var (
-		r    gorequest.Response
-		b    string
-		errs []error
-	)
-
+// Send a PUT request to the Active Campaign API.
+func (c *Campaigner) put(url string, i interface{}) (r gorequest.Response, b []byte, err error) {
 	// Check API config.
 	if err := c.CheckConfig(); err != nil {
 		return r, b, err
@@ -152,25 +136,19 @@ func (c *Campaigner) put(url string, i interface{}) (gorequest.Response, string,
 
 	j, err := json.Marshal(i)
 	if err != nil {
-		log.Fatalf("Could not marshall json for interface: %s\n", err)
+		return r, b, fmt.Errorf("Could not marshall json for interface: %s\n", err)
 	}
-	// log.Println("Data Payload:")
-	// log.Println(string(j))
 
-	r, b, errs = gorequest.New().
-		Post(url).
+	r, b, errs := gorequest.New().
+		Put(url).
 		Send(string(j)).
 		Set("Api-Token", c.APIToken).
-		End()
+		EndBytes()
 
-	var pretty bytes.Buffer
-	err = json.Indent(&pretty, []byte(b), "", "\t")
-	if err != nil {
-		panic(err)
+	// Error check.
+	if errs != nil {
+		return r, b, CustomError{Message: "could not perform HTTP POST request", HTTPErrors: errs}
 	}
-
-	log.Printf("BODY(string):\n %s\n", string(pretty.Bytes()))
-	log.Printf("ERRORS:\n%#v\n", errs)
 
 	return r, b, nil
 }

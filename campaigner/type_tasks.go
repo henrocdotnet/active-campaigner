@@ -24,3 +24,9 @@ type RequestContactFieldUpdate struct {
 	FieldID   int64  `json:"field"`
 	Value     string `json:"value"`
 }
+
+// RequestOrganizationUpdate holds a JSON compatible request for updating contact custom fields.
+type RequestOrganizationUpdate struct {
+	// ID   int64  `json:"id"`
+	Name string `json:"name"`
+}

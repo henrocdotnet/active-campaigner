@@ -3,8 +3,9 @@ package campaigner
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
-	url2 "net/url"
+	"net/url"
 	"strconv"
 	"strings"
 )
@@ -28,6 +29,17 @@ type ResponseOrganizationCreate struct {
 	} `json:"organization"`
 }
 
+// ResponseOrganizationUpdate holds a JSON compatible response for updating organizations.
+type ResponseOrganizationUpdate struct {
+	Organization struct {
+		ID               int64         `json:"id,string"`
+		Name             string        `json:"name"`
+		Links            []interface{} `json:"links"`
+		CreatedTimestamp string        `json:"created_timestamp"`
+		UpdatedTimestamp string        `json:"updated_timestamp"`
+	} `json:"organization"`
+}
+
 // ResponseOrganizationRead holds a JSON compatible response for reading organizations.
 type ResponseOrganizationRead struct {
 	Organization Organization `json:"organization"`
@@ -41,18 +53,16 @@ type ResponseOrganizationList struct {
 	} `json:"meta"`
 }
 
-
 // OrganizationCreate creates an organization.
-func (c *Campaigner) OrganizationCreate(org Organization) (ResponseOrganizationCreate, error) {
+func (c *Campaigner) OrganizationCreate(org Organization) (result ResponseOrganizationCreate, err error) {
 	var (
-		url  = "/api/3/organizations"
+		uri  = "/api/3/organizations"
 		data = map[string]interface{}{
 			"organization": org,
 		}
-		result ResponseOrganizationCreate
 	)
 
-	r, body, err := c.post(url, data)
+	r, body, err := c.post(uri, data)
 	if err != nil {
 		return result, fmt.Errorf("organization creation failed, HTTP error: %s", err)
 	}
@@ -85,11 +95,11 @@ func (c *Campaigner) OrganizationCreate(org Organization) (ResponseOrganizationC
 func (c *Campaigner) OrganizationDelete(id int64) error {
 	// Setup.
 	var (
-		url = fmt.Sprintf("/api/3/organizations/%d", id)
+		uri = fmt.Sprintf("/api/3/organizations/%d", id)
 	)
 
 	// Send DELETE request.
-	r, b, err := c.delete(url)
+	r, b, err := c.delete(uri)
 	if err != nil {
 		return fmt.Errorf("organization delete failed, HTTP failure: %s", err)
 	}
@@ -114,7 +124,7 @@ func (c *Campaigner) OrganizationFind(n string) (ResponseOrganizationList, error
 	// TODO(error-checking): Add status code checking.
 	// Setup.
 	var (
-		qs       = fmt.Sprintf("%s=%s", url2.QueryEscape("filters[name]"), url2.QueryEscape(n))
+		qs       = fmt.Sprintf("%s=%s", url.QueryEscape("filters[name]"), url.QueryEscape(n))
 		u        = fmt.Sprintf("/api/3/organizations/?%s", qs)
 		response ResponseOrganizationList
 	)
@@ -147,10 +157,10 @@ func (c *Campaigner) OrganizationFind(n string) (ResponseOrganizationList, error
 // OrganizationList lists all organizations.
 func (c *Campaigner) OrganizationList(limit int, offset int) (response ResponseOrganizationList, err error) {
 	// Setup.
-	qs := url2.Values{}
+	qs := url.Values{}
 	qs.Set("limit", strconv.Itoa(limit))
 	qs.Set("offset", strconv.Itoa(offset))
-	u := url2.URL{ Path: "/api/3/organizations", RawQuery: qs.Encode() }
+	u := url.URL{Path: "/api/3/organizations", RawQuery: qs.Encode()}
 
 	// GET request.
 	r, body, err := c.get(u.String())
@@ -198,6 +208,31 @@ func (c *Campaigner) OrganizationRead(id int64) (response ResponseOrganizationRe
 		return response, fmt.Errorf("organization read failed, ID %d not found", id)
 	default:
 		return response, fmt.Errorf("organization read failed, unspecified error (%d): %s", r.StatusCode, string(body))
+	}
+
+	return response, nil
+}
+
+// OrganizationUpdate updates an organization.
+func (c *Campaigner) OrganizationUpdate(id int64, request RequestOrganizationUpdate) (response ResponseOrganizationUpdate, err error) {
+	u := url.URL{Path: fmt.Sprintf("/api/3/organizations/%d", id)}
+	d := map[string]interface{}{"organization": request}
+
+	r, body, err := c.put(u.String(), d)
+	if err != nil {
+		return response, fmt.Errorf("organization updated failed, HTTP error: %s", err)
+	}
+
+	switch r.StatusCode {
+	case http.StatusOK:
+		log.Println(string(body))
+		err = json.Unmarshal(body, &response)
+		if err != nil {
+			return response, fmt.Errorf("organization update failed, JSON error: %s", err)
+		}
+
+	default:
+		return response, fmt.Errorf("organization update failed, unspecified error (%d): %s", r.StatusCode, string(body))
 	}
 
 	return response, nil

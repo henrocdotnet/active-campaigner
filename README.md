@@ -33,6 +33,9 @@ export AC_UNIT_TEST_EMAIL='address@domain.com'
 export AC_UNIT_TEST_PHONE='2125551212'
 ```
 
+# TODO
+* Add 404 handling to web requests.
+
 # API Bugs
 * Contact Update: Using PUT method will not update an existing contact.  I have not tried using PUT to create a new contact yet. ([forum link](https://community.activecampaign.com/t/possible-bug-v3-contact-update-put-attempts-failed-with-email-exists/5961))
 * Contact Update: The Organization ID returned in the contact JSON is sometimes a string and sometimes an int.  This appears
