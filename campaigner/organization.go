@@ -13,30 +13,30 @@ import (
 // Organization holds a JSON compatible organization as it exists in the API.
 type Organization struct {
 	// TODO(api): Contact and deal counts should probably not be strings.
-	Name         string        `json:"name"`
-	Links        []interface{} `json:"links"`
-	ID           int64         `json:"id,string"`
-	ContactCount string        `json:"contactCount"`
-	DealCount    string        `json:"dealCount"`
+	Name         string                 `json:"name"`
+	Links        map[string]interface{} `json:"links"`
+	ID           int64                  `json:"id,string"`
+	ContactCount string                 `json:"contactCount"`
+	DealCount    string                 `json:"dealCount"`
 }
 
 // ResponseOrganizationCreate holds a JSON compatible response for creating organizations.
 type ResponseOrganizationCreate struct {
 	Organization struct {
-		Name  string        `json:"name"`
-		Links []interface{} `json:"links"`
-		ID    int64         `json:"id,string"`
+		Name  string                 `json:"name"`
+		Links map[string]interface{} `json:"links"`
+		ID    int64                  `json:"id,string"`
 	} `json:"organization"`
 }
 
 // ResponseOrganizationUpdate holds a JSON compatible response for updating organizations.
 type ResponseOrganizationUpdate struct {
 	Organization struct {
-		ID               int64         `json:"id,string"`
-		Name             string        `json:"name"`
-		Links            []interface{} `json:"links"`
-		CreatedTimestamp string        `json:"created_timestamp"`
-		UpdatedTimestamp string        `json:"updated_timestamp"`
+		ID               int64                  `json:"id,string"`
+		Name             string                 `json:"name"`
+		Links            map[string]interface{} `json:"links"`
+		CreatedTimestamp string                 `json:"created_timestamp"`
+		UpdatedTimestamp string                 `json:"updated_timestamp"`
 	} `json:"organization"`
 }
 
