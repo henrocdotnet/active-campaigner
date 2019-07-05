@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 )
 
 // ContactList lists contacts.
@@ -89,6 +90,44 @@ func (c *Campaigner) ContactCreate(contact Contact) (result ResponseContactCreat
 	default:
 		return result, fmt.Errorf("contact creation failed, unspecified error: %s", body)
 	}
+}
+
+
+// ContactFind searches for a contact by email.
+//
+// Partial emails are not supported by the API.
+func (c *Campaigner) ContactFind(email string) (response ResponseContactList, err error) {
+	// Setup.
+	var (
+		qs       = fmt.Sprintf("%s=%s", url.QueryEscape("filters[email]"), url.QueryEscape(email))
+		u        = fmt.Sprintf("/api/3/contacts/?%s", qs)
+	)
+
+	// Error check.
+	if len(strings.TrimSpace(email)) == 0 {
+		return response, fmt.Errorf("contact find failed, email is empty")
+	}
+
+	// Send GET request.
+	r, body, err := c.get(u)
+	if err != nil {
+		return response, fmt.Errorf("contact find failed, HTTP failure: %s", err)
+	}
+
+	// Response check.
+	switch r.StatusCode {
+	case http.StatusOK:
+		err = json.Unmarshal(body, &response)
+		if err != nil {
+			return response, fmt.Errorf("contact find failed, JSON failure: %s", err)
+		}
+
+		log.Printf("contact find response? %#v\n", response)
+		return response, nil
+	}
+
+	return response, fmt.Errorf("contact find failed, unspecified error (%d); %s", r.StatusCode, string(body))
+
 }
 
 // ContactRead reads a contact.
