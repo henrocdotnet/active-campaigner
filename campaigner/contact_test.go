@@ -97,6 +97,12 @@ func TestContactDelete_Success(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func TestCampaigner_ContactFind(t *testing.T) {
+	// TODO: Add len checks in response.
+	_, err := C.ContactFind("247signup00001@henroc.net")
+	assert.Nil(t, err)
+}
+
 func TestContactRead(t *testing.T) {
 	r, err := C.ContactRead(testContactID)
 

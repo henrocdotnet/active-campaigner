@@ -63,6 +63,12 @@ func main() {
 				os.Exit(-1)
 			}
 
+		case "find":
+			email := args[3]
+			r, err := c.ContactFind(email)
+			handleError(err)
+			fmt.Printf("% #v\n", pretty.Formatter(r))
+
 		case "list":
 			var (
 				limit = campaigner.DEFAULT_LIST_LIMIT
@@ -197,6 +203,14 @@ func main() {
 			handleError(err)
 
 			fmt.Printf("% #v\n", pretty.Formatter(r))
+		case "find":
+			name := args[3]
+
+			r, err := c.OrganizationFind(name)
+			handleError(err)
+
+			fmt.Printf("% #v\n", pretty.Formatter(r))
+
 		case "delete":
 			id, err := strconv.Atoi(args[3])
 			if err != nil {
