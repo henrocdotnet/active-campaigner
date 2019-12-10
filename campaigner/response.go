@@ -10,7 +10,7 @@ type ResponseContactList struct {
 	ScoreValues []interface{} `json:"scoreValues"`
 	Contacts    []Contact     `json:"contacts"`
 	Meta        struct {
-		Total     int    `json:"total,string"`
+		Total     int `json:"total,string"`
 		PageInput struct {
 			Segmentid  int         `json:"segmentid"`
 			Formid     int         `json:"formid"`
@@ -28,39 +28,39 @@ type ResponseContactList struct {
 		} `json:"page_input"`
 	} `json:"meta"`
 	/*
-	Contacts    []struct {
-		Cdate               string        `json:"cdate"`
-		Email               string        `json:"email"`
-		Phone               string        `json:"phone"`
-		FirstName           string        `json:"firstName"`
-		LastName            string        `json:"lastName"`
-		OrgID               string        `json:"orgid"`
-		SegmentioID         string        `json:"segmentio_id"`
-		BouncedHard         string        `json:"bounced_hard"`
-		BouncedSoft         string        `json:"bounced_soft"`
-		BouncedDate         string        `json:"bounced_date"`
-		IP                  string        `json:"ip"`
-		Ua                  string        `json:"ua"`
-		Hash                string        `json:"hash"`
-		SocialDataLastCheck string        `json:"socialdata_lastcheck"`
-		EmailLocal          string        `json:"email_local"`
-		EmailDomain         string        `json:"email_domain"`
-		Sentcnt             string        `json:"sentcnt"`
-		RatingTstamp        string        `json:"rating_tstamp"`
-		Gravatar            string        `json:"gravatar"`
-		Deleted             string        `json:"deleted"`
-		Anonymized          string        `json:"anonymized"`
-		Adate               string        `json:"adate"`
-		Udate               string        `json:"udate"`
-		Edate               string        `json:"edate"`
-		DeletedAt           string        `json:"deleted_at"`
-		CreatedUtcTimestamp string        `json:"created_utc_timestamp"`
-		UpdatedUtcTimestamp string        `json:"updated_utc_timestamp"`
-		ScoreValues         []interface{} `json:"scoreValues"`
-		Links               ContactLinks  `json:"links"`
-		ID                  string        `json:"id"`
-		Organization        string        `json:"organization"`
-	} `json:"contacts"`
+		Contacts    []struct {
+			Cdate               string        `json:"cdate"`
+			Email               string        `json:"email"`
+			Phone               string        `json:"phone"`
+			FirstName           string        `json:"firstName"`
+			LastName            string        `json:"lastName"`
+			OrgID               string        `json:"orgid"`
+			SegmentioID         string        `json:"segmentio_id"`
+			BouncedHard         string        `json:"bounced_hard"`
+			BouncedSoft         string        `json:"bounced_soft"`
+			BouncedDate         string        `json:"bounced_date"`
+			IP                  string        `json:"ip"`
+			Ua                  string        `json:"ua"`
+			Hash                string        `json:"hash"`
+			SocialDataLastCheck string        `json:"socialdata_lastcheck"`
+			EmailLocal          string        `json:"email_local"`
+			EmailDomain         string        `json:"email_domain"`
+			Sentcnt             string        `json:"sentcnt"`
+			RatingTstamp        string        `json:"rating_tstamp"`
+			Gravatar            string        `json:"gravatar"`
+			Deleted             string        `json:"deleted"`
+			Anonymized          string        `json:"anonymized"`
+			Adate               string        `json:"adate"`
+			Udate               string        `json:"udate"`
+			Edate               string        `json:"edate"`
+			DeletedAt           string        `json:"deleted_at"`
+			CreatedUtcTimestamp string        `json:"created_utc_timestamp"`
+			UpdatedUtcTimestamp string        `json:"updated_utc_timestamp"`
+			ScoreValues         []interface{} `json:"scoreValues"`
+			Links               ContactLinks  `json:"links"`
+			ID                  string        `json:"id"`
+			Organization        string        `json:"organization"`
+		} `json:"contacts"`
 	*/
 }
 
@@ -75,10 +75,10 @@ type ResponseContactRead struct {
 		Adddate           string      `json:"adddate"`
 		Remdate           interface{} `json:"remdate"`
 		Timespan          interface{} `json:"timespan"`
-		Lastblock         string      `json:"lastblock"`
+		Lastblock         Int64json   `json:"lastblock"`
 		Lastdate          string      `json:"lastdate"`
-		CompletedElements string      `json:"completedElements"`
-		TotalElements     string      `json:"totalElements"`
+		CompletedElements Int64json   `json:"completedElements"`
+		TotalElements     Int64json   `json:"totalElements"`
 		Completed         int         `json:"completed"`
 		CompleteValue     int         `json:"completeValue"`
 		Links             struct {
@@ -152,19 +152,19 @@ type ResponseContactRead struct {
 	//             returned by ContactRead, and FieldRead are different.
 	FieldValues []ContactFieldValue `json:"fieldValues"`
 	/*
-	FieldValues []struct {
-		ID          int64       `json:"id"`
-		Contact     string      `json:"contact"`
-		Field       string      `json:"field"`
-		Value       interface{} `json:"value"`
-		DateCreated string      `json:"cdate"`
-		DateUpdated string      `json:"udate"`
-		Owner       string      `json:"owner"`
-		Links       struct {
-			Owner string `json:"owner"`
-			Field string `json:"field"`
-		} `json:"links"`
-	} `json:"fieldValues"`
+		FieldValues []struct {
+			ID          int64       `json:"id"`
+			Contact     string      `json:"contact"`
+			Field       string      `json:"field"`
+			Value       interface{} `json:"value"`
+			DateCreated string      `json:"cdate"`
+			DateUpdated string      `json:"udate"`
+			Owner       string      `json:"owner"`
+			Links       struct {
+				Owner string `json:"owner"`
+				Field string `json:"field"`
+			} `json:"links"`
+		} `json:"fieldValues"`
 	*/
 	// TODO(JSON): This field isn't being sent at all at the moment (null).
 	GeoAddresses []struct {
